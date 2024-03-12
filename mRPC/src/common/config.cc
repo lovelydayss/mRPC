@@ -1,4 +1,3 @@
-#include "utils.h"
 #include "config.h"
 
 #include <fstream>
@@ -28,9 +27,8 @@ Config::Config() {
 
 std::shared_ptr<Config> Config::GetGlobalConfig() {
 
-    std::call_once(singleton_config, [&]() {
-        s_ptr_config = std::make_shared<Config>();
-    });
+    std::call_once(singleton_config,
+                   [&]() { s_ptr_config = std::make_shared<Config>(); });
 
     return s_ptr_config;
 }

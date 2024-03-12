@@ -49,7 +49,7 @@ std::string formatString(const char *str, Args &&...args) {
     if (mrpc::Logger::GetGlobalLogger()->getLogLevel() <=                      \
         mrpc::LogLevel::Error) {                                               \
         mrpc::Logger::GetGlobalLogger()->pushLog(                              \
-            (new mrpc::LogEvent(mrpc::LogLevel::Debug))->toString() + "[" +    \
+            (new mrpc::LogEvent(mrpc::LogLevel::Error))->toString() + "[" +    \
             std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" +   \
             mrpc::formatString(str, ##__VA_ARGS__) + "\n");                    \
         mrpc::Logger::GetGlobalLogger()->log();                                \

@@ -1,6 +1,6 @@
-#include "utils.h"
-#include "config.h"
 #include "log.h"
+#include "config.h"
+#include "utils.h"
 
 #include <bits/types/time_t.h>
 #include <chrono>

@@ -7,6 +7,7 @@
 Ubuntu 18.04
 xmake v2.7.9+20230515
 gcc 7.5.0
+vscode + ssh 远程连接开发
 
 #### 支撑库
 配置文件采用 json 实现， 此处采用 jsoncpp 进行 json 格式处理 jsoncpp
