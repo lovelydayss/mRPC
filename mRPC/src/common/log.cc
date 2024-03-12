@@ -86,7 +86,6 @@ void Logger::log() {
 
     {
         std::lock_guard<std::mutex> lk(m_mutex);
-        tmp = m_buffer;
         m_buffer.swap(tmp);
     }
 

@@ -71,7 +71,7 @@ std::shared_ptr<Eventloop> Eventloop::GetThreadLocalEventloop() {
         t_current_eventloop->m_epoll_fd = m_epoll_fd;
 
         t_current_eventloop->initWakeUpFdEevent();
-        INFOLOG("succ create event loop in thread %d", t_current_eventloop->m_thread_id);
+        INFOLOG("success create event loop in thread %d", t_current_eventloop->m_thread_id);
     });
 
     return t_current_eventloop;
