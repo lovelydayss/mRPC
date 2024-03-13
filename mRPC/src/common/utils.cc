@@ -11,7 +11,7 @@ MRPC_NAMESPACE_BEGIN
 
 static int g_pid = 0;
 
-static thread_local int g_thread_id = 0;
+static thread_local int t_thread_id = 0;
 
 pid_t getPid() {
     if (g_pid != 0) {
@@ -21,8 +21,8 @@ pid_t getPid() {
 }
 
 pid_t getThreadId() {
-    if (g_thread_id != 0) {
-        return g_thread_id;
+    if (t_thread_id != 0) {
+        return t_thread_id;
     }
     return static_cast<pid_t>(syscall(SYS_gettid));
 }

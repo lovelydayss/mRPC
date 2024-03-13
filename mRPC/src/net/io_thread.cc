@@ -16,8 +16,8 @@ IOThread::IOThread() {
     ret = sem_init(&m_start_semaphore, 0, 0);
     assert(ret == 0);
 
-    m_thread =
-        std::unique_ptr<std::thread>(new std::thread(&IOThread::Main, this));
+    m_thread = std::make_shared<std::thread>(&IOThread::Main, this);
+    
     sem_wait(&m_init_semaphore); // 等待执行完 Main 函数前置操作
 
     DEBUGLOG("IOThread [%d] create success", m_thread_id);

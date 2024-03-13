@@ -114,9 +114,8 @@ void Eventloop::loop() {
                 epoll_event trigger_event = result_events[i];
                 //  FdEvent* fd_event =
                 //  static_cast<FdEvent*>(trigger_event.data.ptr);
-                std::unique_ptr<FdEvent> fd_event =
-                    std::unique_ptr<FdEvent>(new FdEvent(
-                        *(static_cast<FdEvent*>(trigger_event.data.ptr))));
+                std::shared_ptr<FdEvent> fd_event = std::make_shared<FdEvent>(
+                    *(static_cast<FdEvent*>(trigger_event.data.ptr)));
 
                 if (fd_event == nullptr) {
                     ERRORLOG("fd_event = NULL, continue");
@@ -148,21 +147,19 @@ void Eventloop::wakeup() {
     m_wakeup_fd_event->wakeup();
 }
 
-void Eventloop::addEpollEvent(FdEvent* event) {
+void Eventloop::addEpollEvent(const std::shared_ptr<FdEvent>& event) {
     if (isInLoopThread()) {
         ADD_TO_EPOLL();
     } else {
         auto cb = [this, event]() { ADD_TO_EPOLL(); };
-
         addTask(cb, true);
     }
 }
-void Eventloop::deleteEpollEvent(FdEvent* event) {
+void Eventloop::deleteEpollEvent(const std::shared_ptr<FdEvent>& event) {
     if (isInLoopThread()) {
         DELETE_TO_EPOLL();
     } else {
         auto cb = [this, event]() { DELETE_TO_EPOLL(); };
-
         addTask(cb, true);
     }
 }
@@ -185,8 +182,8 @@ void Eventloop::addTask(const std::function<void()>& cb, bool is_wake_up) {
 void Eventloop::dealWakeup() {}
 
 void Eventloop::initTimer() {
-    m_timer = std::unique_ptr<Timer>(new Timer());
-    addEpollEvent(m_timer.get());
+    m_timer = std::make_shared<Timer>();
+    addEpollEvent(m_timer);
 }
 void Eventloop::initWakeUpFdEevent() {
     m_wakeup_fd = eventfd(0, EFD_NONBLOCK);
@@ -200,8 +197,7 @@ void Eventloop::initWakeUpFdEevent() {
 
     INFOLOG("wakeup fd = %d", m_wakeup_fd);
 
-    m_wakeup_fd_event =
-        std::unique_ptr<WakeUpFdEvent>(new WakeUpFdEvent(m_wakeup_fd));
+    m_wakeup_fd_event = std::make_shared<WakeUpFdEvent>(m_wakeup_fd);
     m_wakeup_fd_event->listen(FdEvent::IN_EVENT, [&]() {
         char buf[8];
         while (read(m_wakeup_fd, buf, 8) != -1 && errno != EAGAIN) {
@@ -210,7 +206,7 @@ void Eventloop::initWakeUpFdEevent() {
         DEBUGLOG("read full bytes from wakeup fd[%d]", m_wakeup_fd);
     });
 
-    addEpollEvent(m_wakeup_fd_event.get());
+    addEpollEvent(m_wakeup_fd_event);
 }
 
 MRPC_NAMESPACE_END

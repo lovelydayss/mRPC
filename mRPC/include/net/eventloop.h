@@ -26,8 +26,8 @@ class Eventloop {
     void stop();
     void wakeup();
 
-    void addEpollEvent(FdEvent* event);
-    void deleteEpollEvent(FdEvent* event);
+    void addEpollEvent(const std::shared_ptr<FdEvent>& event);
+    void deleteEpollEvent(const std::shared_ptr<FdEvent>& event);
 
     void addTimerEvent(const std::shared_ptr<TimerEvent>& event);
 
@@ -48,8 +48,8 @@ class Eventloop {
 
     int m_epoll_fd{0};
     int m_wakeup_fd{0};
-    std::unique_ptr<WakeUpFdEvent> m_wakeup_fd_event{nullptr};
-    std::unique_ptr<Timer> m_timer{nullptr};
+    std::shared_ptr<WakeUpFdEvent> m_wakeup_fd_event{nullptr};
+    std::shared_ptr<Timer> m_timer{nullptr};
 
     bool m_stop_flag{false};
     std::set<int> m_listen_fds;

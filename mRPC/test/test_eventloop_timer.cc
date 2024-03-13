@@ -43,8 +43,8 @@ int main() {
         exit(1);
     }
 
-    mrpc::FdEvent event(listenfd);
-    event.listen(mrpc::FdEvent::IN_EVENT, [listenfd]() {
+    std::shared_ptr<mrpc::FdEvent> event = std::make_shared<mrpc::FdEvent>(listenfd);
+    event->listen(mrpc::FdEvent::IN_EVENT, [listenfd](){
         sockaddr_in peer_addr{};
         socklen_t addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, sizeof(peer_addr));
@@ -55,7 +55,7 @@ int main() {
                  inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
     });
 
-    mrpc::Eventloop::GetThreadLocalEventloop()->addEpollEvent(&event);
+    mrpc::Eventloop::GetThreadLocalEventloop()->addEpollEvent(event);
 
     int i = 0;
     std::shared_ptr<mrpc::TimerEvent> timer_event =

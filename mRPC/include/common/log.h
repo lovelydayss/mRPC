@@ -57,6 +57,9 @@ std::string formatString(const char *str, Args &&...args) {
 
 enum LogLevel { Unknown = 0, Debug = 1, Info = 2, Error = 3 };
 
+std::string LogLevelToString(LogLevel level);
+LogLevel StringToLogLevel(const std::string &log_level);
+
 class Logger {
   public:
     explicit Logger(LogLevel level)
@@ -76,10 +79,6 @@ class Logger {
 
     std::mutex m_mutex;
 };
-
-std::string LogLevelToString(LogLevel level);
-
-LogLevel StringToLogLevel(const std::string &log_level);
 
 class LogEvent {
   public:

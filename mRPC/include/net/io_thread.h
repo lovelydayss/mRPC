@@ -27,7 +27,7 @@ class IOThread {
 
   private:
     pid_t m_thread_id{-1};
-    std::unique_ptr<std::thread> m_thread{nullptr};
+    std::shared_ptr<std::thread> m_thread{nullptr};
     std::shared_ptr<Eventloop> m_eventloop{nullptr};
 
     sem_t m_init_semaphore{}, m_start_semaphore{};
