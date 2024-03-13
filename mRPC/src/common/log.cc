@@ -56,9 +56,11 @@ LogLevel StringToLogLevel(const std::string &log_level) {
 
 std::string LogEvent::toString() {
 
-    time_t cur_time_t = std::chrono::system_clock::to_time_t(
-        std::chrono::high_resolution_clock::now());
-    struct tm cutTM = {0};
+	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+	std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+    auto cs = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()) % 1000 % 1000 % 1000;
 
     m_pid = getPid();
     m_thread_id = getThreadId();
@@ -67,7 +69,8 @@ std::string LogEvent::toString() {
 
     ss << "[" << LogLevelToString(m_level) << "]\t"
        << "["
-       << std::put_time(localtime_r(&cur_time_t, &cutTM), "%y-%m-%d %H:%M:%S")
+       << std::put_time(localtime(&now_time_t), "%Y-%m-%d %H:%M:%S")
+       << ":" << ms.count() << "." << cs.count()
        << "]\t"
        << "[" << m_pid << ":" << m_thread_id << "]\t";
 

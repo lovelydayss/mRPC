@@ -15,6 +15,8 @@ pid_t getPid();
 
 pid_t getThreadId();
 
+int64_t getNowMs();
+
 template<typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args);
 

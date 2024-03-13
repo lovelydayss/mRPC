@@ -40,6 +40,22 @@ target("test_eventloop")
     add_files("mRPC/src/net/*.cc")
     add_files("mRPC/test/test_eventloop.cc")
 
+target("test_eventloop_timer")
+    set_kind("binary")
+
+    add_links("jsoncpp")
+    add_links("protobuf")
+    add_includedirs("/usr/local/include")
+    add_linkdirs("/usr/local/lib")
+
+    add_includedirs("mRPC/include/common")
+    add_includedirs("mRPC/include/net")
+    
+    add_files("mRPC/src/common/*.cc")
+    add_files("mRPC/src/net/*.cc")
+    add_files("mRPC/test/test_eventloop_timer.cc")
+
+
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

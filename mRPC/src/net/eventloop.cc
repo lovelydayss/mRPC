@@ -1,6 +1,8 @@
 #include "eventloop.h"
 #include "fd_event.h"
 #include "log.h"
+#include "timer.h"
+#include "timer_event.h"
 #include "utils.h"
 #include "wakeup_fd_event.h"
 
@@ -71,7 +73,10 @@ std::shared_ptr<Eventloop> Eventloop::GetThreadLocalEventloop() {
         t_current_eventloop->m_epoll_fd = m_epoll_fd;
 
         t_current_eventloop->initWakeUpFdEevent();
-        INFOLOG("success create event loop in thread %d", t_current_eventloop->m_thread_id);
+        t_current_eventloop->initTimer();
+        
+        INFOLOG("success create event loop in thread %d",
+                t_current_eventloop->m_thread_id);
     });
 
     return t_current_eventloop;
@@ -162,6 +167,10 @@ void Eventloop::deleteEpollEvent(FdEvent *event) {
     }
 }
 
+void Eventloop::addTimerEvent(const std::shared_ptr<TimerEvent> &event) {
+    m_timer->addTimerEvent(event);
+}
+
 bool Eventloop::isInLoopThread() const { return getThreadId() == m_thread_id; }
 void Eventloop::addTask(const std::function<void()> &cb, bool is_wake_up) {
 
@@ -174,6 +183,11 @@ void Eventloop::addTask(const std::function<void()> &cb, bool is_wake_up) {
 }
 
 void Eventloop::dealWakeup() {}
+
+void Eventloop::initTimer() {
+    m_timer = std::unique_ptr<Timer>(new Timer());
+    addEpollEvent(m_timer.get());
+}
 void Eventloop::initWakeUpFdEevent() {
     m_wakeup_fd = eventfd(0, EFD_NONBLOCK);
 

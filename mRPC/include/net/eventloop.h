@@ -2,10 +2,13 @@
 #define MRPC_NET_EVENTLOOP_H
 
 #include "fd_event.h"
+#include "timer.h"
+#include "timer_event.h"
 #include "utils.h"
 #include "wakeup_fd_event.h"
 
 #include <functional>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -27,12 +30,16 @@ class Eventloop {
     void addEpollEvent(FdEvent *event);
     void deleteEpollEvent(FdEvent *event);
 
+    void addTimerEvent(const std::shared_ptr<TimerEvent>& event);
+
     bool isInLoopThread() const;
     void addTask(const std::function<void()>& cb, bool is_wake_up = false);
 
     static std::shared_ptr<Eventloop> GetThreadLocalEventloop();
   private:
     void dealWakeup();
+    
+    void initTimer();
     void initWakeUpFdEevent();
 
   private:
@@ -42,6 +49,7 @@ class Eventloop {
     int m_epoll_fd{0};
     int m_wakeup_fd{0};
     std::unique_ptr<WakeUpFdEvent> m_wakeup_fd_event{nullptr};
+    std::unique_ptr<Timer> m_timer{nullptr};
 
     bool m_stop_flag{false};
     std::set<int> m_listen_fds;

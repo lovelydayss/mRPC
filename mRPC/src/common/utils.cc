@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <utility>
+#include <chrono>
 
 MRPC_NAMESPACE_BEGIN
 
@@ -24,6 +25,15 @@ pid_t getThreadId() {
         return g_thread_id;
     }
     return static_cast<pid_t>(syscall(SYS_gettid));
+}
+
+int64_t getNowMs() {
+
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+
+    return ms.count();
+
 }
 
 template<typename T, typename... Args>
