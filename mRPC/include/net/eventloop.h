@@ -20,15 +20,14 @@ MRPC_NAMESPACE_BEGIN
 class Eventloop {
   public:
     Eventloop();
-
     ~Eventloop();
 
     void loop();
     void stop();
     void wakeup();
 
-    void addEpollEvent(FdEvent *event);
-    void deleteEpollEvent(FdEvent *event);
+    void addEpollEvent(FdEvent* event);
+    void deleteEpollEvent(FdEvent* event);
 
     void addTimerEvent(const std::shared_ptr<TimerEvent>& event);
 
@@ -36,9 +35,10 @@ class Eventloop {
     void addTask(const std::function<void()>& cb, bool is_wake_up = false);
 
     static std::shared_ptr<Eventloop> GetThreadLocalEventloop();
+
   private:
     void dealWakeup();
-    
+
     void initTimer();
     void initWakeUpFdEevent();
 

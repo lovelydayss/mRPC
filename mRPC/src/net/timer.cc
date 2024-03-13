@@ -24,17 +24,19 @@ Timer::Timer()
     listen(FdEvent::IN_EVENT, std::bind(&Timer::onTimer, this));
 }
 
-void Timer::addTimerEvent(const std::shared_ptr<TimerEvent> &event) {
+void Timer::addTimerEvent(const std::shared_ptr<TimerEvent>& event) {
     bool is_rest_timerfd = false;
 
     {
         std::lock_guard<std::mutex> lk(m_mutex);
 
-        if (m_pending_events.empty()) {     // 定时任务队列为空情况
+        if (m_pending_events.empty()) { // 定时任务队列为空情况
             is_rest_timerfd = true;
         } else {
             auto event_begin = m_pending_events.begin();
-            if (event_begin->second->getArriveTime() > event->getArriveTime())      // 最近定时任务时间比当前待处理任务远情况
+            if (event_begin->second->getArriveTime() >
+                event
+                    ->getArriveTime()) // 最近定时任务时间比当前待处理任务远情况
                 is_rest_timerfd = true;
         }
 
@@ -43,7 +45,7 @@ void Timer::addTimerEvent(const std::shared_ptr<TimerEvent> &event) {
 
     if (is_rest_timerfd) resetArriveTime();
 }
-void Timer::deleteTimerEvent(const std::shared_ptr<TimerEvent> &event) {
+void Timer::deleteTimerEvent(const std::shared_ptr<TimerEvent>& event) {
 
     event->setCancled(true);
 
@@ -53,7 +55,7 @@ void Timer::deleteTimerEvent(const std::shared_ptr<TimerEvent> &event) {
         auto begin = m_pending_events.lower_bound(event->getArriveTime());
         auto end = m_pending_events.upper_bound(event->getArriveTime());
 
-        for (auto &it = begin; it != end; ++it) {
+        for (auto& it = begin; it != end; ++it) {
             if (it->second == event) {
                 m_pending_events.erase(it);
                 break;
@@ -96,7 +98,7 @@ void Timer::onTimer() {
     }
 
     // 重复触发事件处理
-    for (auto &event : ontime_events) {
+    for (auto& event : ontime_events) {
         if (event->isRepeated()) {
             event->resetArriveTime(); // 调整 arriveTime
             addTimerEvent(event);     // 重新添加到定时器
@@ -107,7 +109,7 @@ void Timer::onTimer() {
     resetArriveTime();
 
     // 执行所有非空定时任务
-    for (auto &event : ontime_events) {
+    for (auto& event : ontime_events) {
         if (event->getCallBack()) event->getCallBack();
     }
 }

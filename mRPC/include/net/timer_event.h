@@ -34,7 +34,6 @@ class TimerEvent {
     bool m_is_cancled{false};
 
     std::function<void()> m_task;
-
 };
 
 MRPC_NAMESPACE_END

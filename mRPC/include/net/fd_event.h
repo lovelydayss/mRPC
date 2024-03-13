@@ -30,7 +30,7 @@ class FdEvent {
         handler(TriggerEvent event_type); // 根据套接字类型返回对应回调函数
     void listen(
         TriggerEvent event_type,
-        const std::function<void()> &callback); // 监听时给套接字绑定回调函数
+        const std::function<void()>& callback); // 监听时给套接字绑定回调函数
 
     int getFd() const { return m_fd; }
     epoll_event getEpollEvent() { return m_listen_events; }

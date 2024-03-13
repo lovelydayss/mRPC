@@ -74,7 +74,7 @@ std::shared_ptr<Eventloop> Eventloop::GetThreadLocalEventloop() {
 
         t_current_eventloop->initWakeUpFdEevent();
         t_current_eventloop->initTimer();
-        
+
         INFOLOG("success create event loop in thread %d",
                 t_current_eventloop->m_thread_id);
     });
@@ -116,7 +116,7 @@ void Eventloop::loop() {
                 //  static_cast<FdEvent*>(trigger_event.data.ptr);
                 std::unique_ptr<FdEvent> fd_event =
                     std::unique_ptr<FdEvent>(new FdEvent(
-                        *(static_cast<FdEvent *>(trigger_event.data.ptr))));
+                        *(static_cast<FdEvent*>(trigger_event.data.ptr))));
 
                 if (fd_event == nullptr) {
                     ERRORLOG("fd_event = NULL, continue");
@@ -148,7 +148,7 @@ void Eventloop::wakeup() {
     m_wakeup_fd_event->wakeup();
 }
 
-void Eventloop::addEpollEvent(FdEvent *event) {
+void Eventloop::addEpollEvent(FdEvent* event) {
     if (isInLoopThread()) {
         ADD_TO_EPOLL();
     } else {
@@ -157,7 +157,7 @@ void Eventloop::addEpollEvent(FdEvent *event) {
         addTask(cb, true);
     }
 }
-void Eventloop::deleteEpollEvent(FdEvent *event) {
+void Eventloop::deleteEpollEvent(FdEvent* event) {
     if (isInLoopThread()) {
         DELETE_TO_EPOLL();
     } else {
@@ -167,12 +167,12 @@ void Eventloop::deleteEpollEvent(FdEvent *event) {
     }
 }
 
-void Eventloop::addTimerEvent(const std::shared_ptr<TimerEvent> &event) {
+void Eventloop::addTimerEvent(const std::shared_ptr<TimerEvent>& event) {
     m_timer->addTimerEvent(event);
 }
 
 bool Eventloop::isInLoopThread() const { return getThreadId() == m_thread_id; }
-void Eventloop::addTask(const std::function<void()> &cb, bool is_wake_up) {
+void Eventloop::addTask(const std::function<void()>& cb, bool is_wake_up) {
 
     {
         std::lock_guard<std::mutex> lk(m_mutex);
