@@ -1,3 +1,8 @@
 {
-    "log_level" : "DEBUG"       
+    "rpc_log": {
+        "log_level": "DEBUG"
+    },
+    "app_log": {
+        "log_level": "INFO"
+    }
 }

@@ -21,7 +21,7 @@ Config::Config() {
     if (!in.is_open()) throw "Wrong Configure File Path";
 
     if (reader.parse(in, root)) {
-        m_log_level = root["log_level"].asString();
+        m_log_level = root["rpc_log"]["log_level"].asString();
     }
 }
 
