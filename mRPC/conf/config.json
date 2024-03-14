@@ -4,5 +4,10 @@
     },
     "app_log": {
         "log_level": "INFO"
+    },
+    "server" : {
+        "io_thread_nums": 1
     }
+
+
 }

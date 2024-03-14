@@ -15,11 +15,14 @@ class Config {
   public:
     Config();
     std::string getLogLevel() const { return m_log_level; }
+    int getIOThreadNums() const { return m_io_thread_nums; }
 
     static std::shared_ptr<Config> GetGlobalConfig();
 
   private:
     std::string m_log_level;
+
+    int m_io_thread_nums;
 };
 
 MRPC_NAMESPACE_END

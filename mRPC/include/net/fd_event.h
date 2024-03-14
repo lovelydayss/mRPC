@@ -26,7 +26,7 @@ class FdEvent {
 
     ~FdEvent() = default;
 
-    std::function<void()>
+    const std::function<void()>&
         handler(TriggerEvent event_type); // 根据套接字类型返回对应回调函数
     void listen(
         TriggerEvent event_type,

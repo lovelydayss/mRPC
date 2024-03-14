@@ -22,6 +22,7 @@ Config::Config() {
 
     if (reader.parse(in, root)) {
         m_log_level = root["rpc_log"]["log_level"].asString();
+        m_io_thread_nums = root["server"]["io_thread_nums"].asInt();
     }
 }
 

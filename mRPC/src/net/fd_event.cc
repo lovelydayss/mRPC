@@ -4,7 +4,7 @@
 
 MRPC_NAMESPACE_BEGIN
 
-std::function<void()> FdEvent::handler(TriggerEvent event_type) {
+const std::function<void()>& FdEvent::handler(TriggerEvent event_type) {
     return event_type == TriggerEvent::IN_EVENT ? m_read_callback
                                                 : m_write_callback;
 }

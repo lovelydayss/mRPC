@@ -63,7 +63,7 @@ int TcpAcceptor::accept() const{
 
         IPNetAddr peer_addr(client_addr);
         INFOLOG("A client have accpeted succ, peer addr [%s]",
-                peer_addr.toString());
+                peer_addr.toString().c_str());
 
         return client_fd;
     } else {

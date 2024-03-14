@@ -4,10 +4,11 @@
 
 MRPC_NAMESPACE_BEGIN
 
-TimerEvent::TimerEvent(int interval, bool is_repeated, std::function<void()> cb)
+TimerEvent::TimerEvent(int interval, bool is_repeated,
+                       const std::function<void()>& cb)
     : m_interval(interval)
     , m_is_repeated(is_repeated)
-    , m_task(std::move(cb)) {
+    , m_task(cb) {
 
     resetArriveTime();
 }

@@ -97,21 +97,18 @@ void Timer::onTimer() {
         m_pending_events.erase(m_pending_events.begin(), it);
     }
 
-    // 重复触发事件处理
     for (auto& event : ontime_events) {
+        if (event->getCallBack()) {
+            event->getCallBack()(); // 执行任务
+        }
+
         if (event->isRepeated()) {
             event->resetArriveTime(); // 调整 arriveTime
             addTimerEvent(event);     // 重新添加到定时器
         }
     }
 
-    // 重设 epoll 触发时间
-    resetArriveTime();
-
-    // 执行所有非空定时任务
-    for (auto& event : ontime_events) {
-        if (event->getCallBack()) event->getCallBack();
-    }
+    resetArriveTime(); // 重设定时器触发
 }
 
 // 重设 epoll 定时器接口触发时间

@@ -2,8 +2,7 @@
 #include "log.h"
 #include "utils.h"
 #include <cstdint>
-#include <memory>
-#include <string.h>
+#include <cstring>
 #include <string>
 
 MRPC_NAMESPACE_BEGIN

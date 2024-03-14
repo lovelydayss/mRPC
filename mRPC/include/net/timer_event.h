@@ -3,6 +3,7 @@
 
 #include "fd_event.h"
 #include "utils.h"
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 
@@ -13,7 +14,7 @@ MRPC_NAMESPACE_BEGIN
 class TimerEvent {
 
   public:
-    TimerEvent(int interval, bool is_repeated, std::function<void()> cb);
+    TimerEvent(int interval, bool is_repeated, const std::function<void()>& cb);
 
     int64_t getArriveTime() const { return m_arrive_time; }
 
@@ -23,7 +24,7 @@ class TimerEvent {
 
     bool isRepeated() const { return m_is_repeated; }
 
-    std::function<void()> getCallBack() { return m_task; }
+    const std::function<void()>& getCallBack() { return m_task; }
 
     void resetArriveTime();
 
