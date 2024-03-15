@@ -25,8 +25,8 @@ MRPC_NAMESPACE_BEGIN
     }                                                                          \
     epoll_event tmp = event->getEpollEvent();                                  \
     INFOLOG("epoll_event.events = %d", (int) tmp.events);                      \
-    int rt = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);                  \
-    if (rt == -1) {                                                            \
+    int ret = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);                 \
+    if (ret == -1) {                                                           \
         ERRORLOG("failed epoll_ctl when add fd, errno=%d, error=%s", errno,    \
                  strerror(errno));                                             \
     }                                                                          \
@@ -40,27 +40,25 @@ MRPC_NAMESPACE_BEGIN
     }                                                                          \
     int op = EPOLL_CTL_DEL;                                                    \
     epoll_event tmp = event->getEpollEvent();                                  \
-    int rt = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);                  \
-    if (rt == -1) {                                                            \
+    int ret = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);                 \
+    if (ret == -1) {                                                           \
         ERRORLOG("failed epoll_ctl when add fd, errno=%d, error=%s", errno,    \
                  strerror(errno));                                             \
     }                                                                          \
     DEBUGLOG("delete event success, fd[%d]", event->getFd());
 
-static thread_local std::shared_ptr<Eventloop> t_current_eventloop = nullptr;
-static thread_local std::once_flag t_singleton_eventloop;
+static thread_local EventLoop::s_ptr t_current_EventLoop = nullptr;
+static thread_local std::once_flag t_singleton_EventLoop;
 static int g_epoll_max_timeout = 10000;
 static int g_epoll_max_events = 10;
 
-Eventloop::Eventloop() {}
+EventLoop::~EventLoop() { close(m_epoll_fd); }
 
-Eventloop::~Eventloop() { close(m_epoll_fd); }
+EventLoop::s_ptr EventLoop::GetThreadLocalEventLoop() {
 
-std::shared_ptr<Eventloop> Eventloop::GetThreadLocalEventloop() {
-
-    std::call_once(t_singleton_eventloop, [&]() {
-        t_current_eventloop = std::make_shared<Eventloop>();
-        t_current_eventloop->m_thread_id = getThreadId();
+    std::call_once(t_singleton_EventLoop, [&]() {
+        t_current_EventLoop = std::make_shared<EventLoop>();
+        t_current_EventLoop->m_thread_id = getThreadId();
         int m_epoll_fd = epoll_create(10);
 
         if (m_epoll_fd == -1) {
@@ -70,19 +68,21 @@ std::shared_ptr<Eventloop> Eventloop::GetThreadLocalEventloop() {
             exit(0);
         }
 
-        t_current_eventloop->m_epoll_fd = m_epoll_fd;
+        t_current_EventLoop->m_epoll_fd = m_epoll_fd;
 
-        t_current_eventloop->initWakeUpFdEevent();
-        t_current_eventloop->initTimer();
+        t_current_EventLoop->initWakeUpFdEevent();
+        t_current_EventLoop->initTimer();
 
         INFOLOG("success create event loop in thread %d",
-                t_current_eventloop->m_thread_id);
+                t_current_EventLoop->m_thread_id);
     });
 
-    return t_current_eventloop;
+    return t_current_EventLoop;
 }
 
-void Eventloop::loop() {
+void EventLoop::loop() {
+    m_is_looping = true;
+
     while (!m_stop_flag) {
 
         std::queue<std::function<void()>> tmp_tasks;
@@ -96,16 +96,14 @@ void Eventloop::loop() {
             std::function<void()> cb = tmp_tasks.front();
             tmp_tasks.pop();
 
-            if (cb) {
-                cb();
-            }
+            if (cb) cb();
         }
 
         int timeout = g_epoll_max_timeout;
         epoll_event result_events[g_epoll_max_events];
         int ret =
             epoll_wait(m_epoll_fd, result_events, g_epoll_max_events, timeout);
-        DEBUGLOG("now end epoll_wait, rt = %d", ret);
+        DEBUGLOG("now end epoll_wait, ret = %d", ret);
 
         if (ret < 0) {
             ERRORLOG("epoll_wait error, errno=", errno);
@@ -114,7 +112,7 @@ void Eventloop::loop() {
                 epoll_event trigger_event = result_events[i];
                 //  FdEvent* fd_event =
                 //  static_cast<FdEvent*>(trigger_event.data.ptr);
-                std::shared_ptr<FdEvent> fd_event = std::make_shared<FdEvent>(
+                FdEvent::s_ptr fd_event = std::make_shared<FdEvent>(
                     *(static_cast<FdEvent*>(trigger_event.data.ptr)));
 
                 if (fd_event == nullptr) {
@@ -136,18 +134,18 @@ void Eventloop::loop() {
         }
     }
 }
-void Eventloop::stop() {
+void EventLoop::stop() {
 
     INFOLOG("EVENT LOOP STOP!");
     m_stop_flag = true;
 }
-void Eventloop::wakeup() {
+void EventLoop::wakeup() {
 
     INFOLOG("WAKE UP!");
     m_wakeup_fd_event->wakeup();
 }
 
-void Eventloop::addEpollEvent(const std::shared_ptr<FdEvent>& event) {
+void EventLoop::addEpollEvent(const FdEvent::s_ptr& event) {
     if (isInLoopThread()) {
         ADD_TO_EPOLL();
     } else {
@@ -155,7 +153,7 @@ void Eventloop::addEpollEvent(const std::shared_ptr<FdEvent>& event) {
         addTask(cb, true);
     }
 }
-void Eventloop::deleteEpollEvent(const std::shared_ptr<FdEvent>& event) {
+void EventLoop::deleteEpollEvent(const FdEvent::s_ptr& event) {
     if (isInLoopThread()) {
         DELETE_TO_EPOLL();
     } else {
@@ -164,12 +162,14 @@ void Eventloop::deleteEpollEvent(const std::shared_ptr<FdEvent>& event) {
     }
 }
 
-void Eventloop::addTimerEvent(const std::shared_ptr<TimerEvent>& event) {
+void EventLoop::addTimerEvent(const TimerEvent::s_ptr& event) {
     m_timer->addTimerEvent(event);
 }
 
-bool Eventloop::isInLoopThread() const { return getThreadId() == m_thread_id; }
-void Eventloop::addTask(const std::function<void()>& cb, bool is_wake_up) {
+bool EventLoop::isInLoopThread() const { return getThreadId() == m_thread_id; }
+bool EventLoop::isLooping() const { return m_is_looping; }
+
+void EventLoop::addTask(const std::function<void()>& cb, bool is_wake_up) {
 
     {
         std::lock_guard<std::mutex> lk(m_mutex);
@@ -179,13 +179,13 @@ void Eventloop::addTask(const std::function<void()>& cb, bool is_wake_up) {
     if (is_wake_up) wakeup();
 }
 
-void Eventloop::dealWakeup() {}
+void EventLoop::dealWakeup() {}
 
-void Eventloop::initTimer() {
+void EventLoop::initTimer() {
     m_timer = std::make_shared<Timer>();
     addEpollEvent(m_timer);
 }
-void Eventloop::initWakeUpFdEevent() {
+void EventLoop::initWakeUpFdEevent() {
     m_wakeup_fd = eventfd(0, EFD_NONBLOCK);
 
     if (m_wakeup_fd < 0) {

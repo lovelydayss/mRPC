@@ -12,6 +12,9 @@ MRPC_NAMESPACE_BEGIN
 
 class NetAddr {
   public:
+    using s_ptr = std::shared_ptr<NetAddr>;
+
+  public:
     virtual sockaddr* getSockAddr() = 0;
     virtual socklen_t getSockLen() = 0;
     virtual int getFamily() = 0;
@@ -21,6 +24,9 @@ class NetAddr {
 };
 
 class IPNetAddr : public NetAddr {
+  public:
+    using s_ptr = std::shared_ptr<IPNetAddr>;
+
   public:
     IPNetAddr(const std::string& ip, uint16_t port);
     explicit IPNetAddr(const std::string& addr);

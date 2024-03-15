@@ -24,7 +24,7 @@ IOThread::IOThread() {
 }
 
 IOThread::~IOThread() {
-    m_eventloop->stop();
+    m_EventLoop->stop();
 
     sem_destroy(&m_init_semaphore);
     sem_destroy(&m_start_semaphore);
@@ -32,7 +32,7 @@ IOThread::~IOThread() {
     m_thread->join();
 }
 
-std::shared_ptr<Eventloop> IOThread::getEventLoop() { return m_eventloop; }
+const EventLoop::s_ptr& IOThread::getEventLoop() { return m_EventLoop; }
 
 void IOThread::start() {
     DEBUGLOG("Now invoke IOThread %d", m_thread_id);
@@ -47,7 +47,7 @@ void* IOThread::Main(void* arg) {
 
     auto thread = static_cast<IOThread*>(arg);
 
-    thread->m_eventloop = Eventloop::GetThreadLocalEventloop();
+    thread->m_EventLoop = EventLoop::GetThreadLocalEventLoop();
     thread->m_thread_id = getThreadId();
 
     sem_post(&thread->m_init_semaphore); // 唤醒等待的线程
@@ -58,7 +58,7 @@ void* IOThread::Main(void* arg) {
     sem_wait(&thread->m_start_semaphore);
     
     DEBUGLOG("IOThread %d start loop ", thread->m_thread_id);
-    Eventloop::GetThreadLocalEventloop()->loop();                       // 启动循环
+    EventLoop::GetThreadLocalEventLoop()->loop();                       // 启动循环
     DEBUGLOG("IOThread %d end loop ", thread->m_thread_id);
 
     return nullptr;

@@ -9,6 +9,8 @@ MRPC_NAMESPACE_BEGIN
 
 // 环形缓冲区实现
 class TcpBuffer {
+    public:
+    using s_ptr = std::shared_ptr<TcpBuffer>;
 
   public:
     explicit TcpBuffer(int size) {
@@ -22,6 +24,7 @@ class TcpBuffer {
 
     // 返回可写的字节数
     int writeAble() const;
+    int getBufferSize() const;
 
     int readIndex() const;
     int writeIndex() const;
@@ -38,6 +41,7 @@ class TcpBuffer {
     int m_read_index{0};        // 可读位置
     int m_write_index{0};       // 可写位置
 
+  public: 
     std::vector<char> m_buffer;
 };
 

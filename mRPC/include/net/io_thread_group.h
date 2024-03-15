@@ -8,6 +8,8 @@
 MRPC_NAMESPACE_BEGIN
 
 class IOThreadGroup {
+  public:
+    using s_ptr = std::shared_ptr<IOThreadGroup>;
 
   public:
     explicit IOThreadGroup(int size);
@@ -17,11 +19,11 @@ class IOThreadGroup {
     void start();
     void join();
 
-    std::shared_ptr<IOThread> getIOThread();
+    const IOThread::s_ptr& getIOThread();
 
   private:
     int m_size{0};
-    std::vector<std::shared_ptr<IOThread>> m_io_threads;
+    std::vector<IOThread::s_ptr> m_io_threads;
 
     int m_index{0};
 };

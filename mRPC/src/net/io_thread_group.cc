@@ -22,7 +22,7 @@ void IOThreadGroup::join() {
         io_thread->join();
 }
 
-std::shared_ptr<IOThread> IOThreadGroup::getIOThread() {
+const IOThread::s_ptr& IOThreadGroup::getIOThread() {
     if (m_index == static_cast<int>(m_io_threads.size()) || m_index == -1)
         m_index = 0;
 

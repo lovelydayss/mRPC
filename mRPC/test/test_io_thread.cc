@@ -27,19 +27,19 @@ void test_io_thread() {
     addr.sin_family = AF_INET;
     inet_aton("127.0.0.1", &addr.sin_addr);
 
-    int rt = bind(listenfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
-    if (rt != 0) {
+    int ret = bind(listenfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+    if (ret != 0) {
         ERRORLOG("bind error");
         exit(1);
     }
 
-    rt = listen(listenfd, 100);
-    if (rt != 0) {
+    ret = listen(listenfd, 100);
+    if (ret != 0) {
         ERRORLOG("listen error");
         exit(1);
     }
 
-    std::shared_ptr<mrpc::FdEvent> event =
+    mrpc::FdEvent::s_ptr event =
         std::make_shared<mrpc::FdEvent>(listenfd);
     event->listen(mrpc::FdEvent::IN_EVENT, [listenfd]() {
         sockaddr_in peer_addr{};
@@ -53,7 +53,7 @@ void test_io_thread() {
     });
 
     int i = 0;
-    std::shared_ptr<mrpc::TimerEvent> timer_event =
+    mrpc::TimerEvent::s_ptr timer_event =
         std::make_shared<mrpc::TimerEvent>(1000, true, [&i]() {
             INFOLOG("trigger timer event, count=%d", i++);
         });
@@ -66,11 +66,11 @@ void test_io_thread() {
     // io_thread.join();
 
     mrpc::IOThreadGroup io_thread_group(2);
-    std::shared_ptr<mrpc::IOThread> io_thread = io_thread_group.getIOThread();
+    mrpc::IOThread::s_ptr io_thread = io_thread_group.getIOThread();
     io_thread->getEventLoop()->addEpollEvent(event);
     io_thread->getEventLoop()->addTimerEvent(timer_event);
 
-    std::shared_ptr<mrpc::IOThread> io_thread2 = io_thread_group.getIOThread();
+    mrpc::IOThread::s_ptr io_thread2 = io_thread_group.getIOThread();
     io_thread2->getEventLoop()->addTimerEvent(timer_event);
 
     io_thread_group.start();

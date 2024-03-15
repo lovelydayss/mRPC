@@ -1,5 +1,5 @@
-#ifndef MRPC_NET_EVENTLOOP_H
-#define MRPC_NET_EVENTLOOP_H
+#ifndef MRPC_NET_EventLoop_H
+#define MRPC_NET_EventLoop_H
 
 #include "fd_event.h"
 #include "timer.h"
@@ -17,24 +17,30 @@
 
 MRPC_NAMESPACE_BEGIN
 
-class Eventloop {
+class EventLoop {
   public:
-    Eventloop();
-    ~Eventloop();
+    using s_ptr = std::shared_ptr<EventLoop>;
+
+  public:
+    EventLoop() = default;
+    ~EventLoop();
 
     void loop();
     void stop();
     void wakeup();
 
-    void addEpollEvent(const std::shared_ptr<FdEvent>& event);
-    void deleteEpollEvent(const std::shared_ptr<FdEvent>& event);
+    void addEpollEvent(const FdEvent::s_ptr& event);
+    void deleteEpollEvent(const FdEvent::s_ptr& event);
 
-    void addTimerEvent(const std::shared_ptr<TimerEvent>& event);
+    void addTimerEvent(const TimerEvent::s_ptr& event);
 
     bool isInLoopThread() const;
+    bool isLooping() const;
+
     void addTask(const std::function<void()>& cb, bool is_wake_up = false);
 
-    static std::shared_ptr<Eventloop> GetThreadLocalEventloop();
+    static EventLoop::s_ptr GetThreadLocalEventLoop();
+
 
   private:
     void dealWakeup();
@@ -48,12 +54,14 @@ class Eventloop {
 
     int m_epoll_fd{0};
     int m_wakeup_fd{0};
-    std::shared_ptr<WakeUpFdEvent> m_wakeup_fd_event{nullptr};
-    std::shared_ptr<Timer> m_timer{nullptr};
+    WakeUpFdEvent::s_ptr m_wakeup_fd_event{nullptr};
+    Timer::s_ptr m_timer{nullptr};
 
-    bool m_stop_flag{false};
     std::set<int> m_listen_fds;
     std::queue<std::function<void()>> m_pending_tasks;
+
+    bool m_stop_flag{false};
+    bool m_is_looping{false};
 };
 
 MRPC_NAMESPACE_END

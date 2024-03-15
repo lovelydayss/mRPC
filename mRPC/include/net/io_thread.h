@@ -13,10 +13,13 @@ MRPC_NAMESPACE_BEGIN
 
 class IOThread {
   public:
+    using s_ptr = std::shared_ptr<IOThread>;
+
+  public:
     IOThread();
     ~IOThread();
 
-    std::shared_ptr<Eventloop> getEventLoop();
+    const EventLoop::s_ptr& getEventLoop();
 
     void start();
     void join();
@@ -28,7 +31,7 @@ class IOThread {
   private:
     pid_t m_thread_id{-1};
     std::shared_ptr<std::thread> m_thread{nullptr};
-    std::shared_ptr<Eventloop> m_eventloop{nullptr};
+    EventLoop::s_ptr m_EventLoop{nullptr};
 
     sem_t m_init_semaphore{}, m_start_semaphore{};
 };

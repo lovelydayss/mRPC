@@ -8,10 +8,11 @@
 #include <memory>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <utility>
 
 MRPC_NAMESPACE_BEGIN
 
-TcpAcceptor::TcpAcceptor(const std::shared_ptr<NetAddr>& local_addr)
+TcpAcceptor::TcpAcceptor(const NetAddr::s_ptr& local_addr)
     : m_local_addr(local_addr) {
     if (!local_addr->checkValid()) {
         ERRORLOG("invalid local addr %s", local_addr->toString().c_str());
@@ -46,7 +47,7 @@ TcpAcceptor::TcpAcceptor(const std::shared_ptr<NetAddr>& local_addr)
     }
 }
 
-int TcpAcceptor::accept() const{
+std::pair<int, NetAddr::s_ptr> TcpAcceptor::accept() const {
 
     if (m_family == AF_INET) {
         sockaddr_in client_addr{};
@@ -61,13 +62,13 @@ int TcpAcceptor::accept() const{
                      strerror(errno));
         }
 
-        IPNetAddr peer_addr(client_addr);
+        IPNetAddr::s_ptr peer_addr = std::make_shared<IPNetAddr>(client_addr);
         INFOLOG("A client have accpeted succ, peer addr [%s]",
-                peer_addr.toString().c_str());
+                peer_addr->toString().c_str());
 
-        return client_fd;
+        return std::make_pair(client_fd, peer_addr);
     } else {
-        return 1;
+        return std::make_pair(-1, nullptr);
     }
 }
 

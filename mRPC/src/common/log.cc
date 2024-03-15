@@ -13,10 +13,10 @@
 
 MRPC_NAMESPACE_BEGIN
 
-static std::shared_ptr<Logger> s_ptr_logger = nullptr;
+static Logger::s_ptr s_ptr_logger = nullptr;
 static std::once_flag singleton_logger;
 
-std::shared_ptr<Logger> Logger::GetGlobalLogger() {
+Logger::s_ptr Logger::GetGlobalLogger() {
 
     std::call_once(singleton_logger, [&]() {
         LogLevel global_log_level =

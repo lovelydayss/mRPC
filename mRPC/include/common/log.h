@@ -12,7 +12,7 @@
 MRPC_NAMESPACE_BEGIN
 
 template <typename... Args>
-std::string formatString(const char *str, Args &&...args) {
+std::string formatString(const char* str, Args&&... args) {
 
     int size = snprintf(nullptr, 0, str, args...);
 
@@ -29,7 +29,7 @@ std::string formatString(const char *str, Args &&...args) {
     if (mrpc::Logger::GetGlobalLogger()->getLogLevel() <=                      \
         mrpc::LogLevel::Debug) {                                               \
         mrpc::Logger::GetGlobalLogger()->pushLog(                              \
-            (new mrpc::LogEvent(mrpc::LogLevel::Debug))->toString() + "[" +    \
+            mrpc::LogEvent(mrpc::LogLevel::Debug).toString() + "[" +           \
             std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" +   \
             mrpc::formatString(str, ##__VA_ARGS__) + "\n");                    \
         mrpc::Logger::GetGlobalLogger()->log();                                \
@@ -39,7 +39,7 @@ std::string formatString(const char *str, Args &&...args) {
     if (mrpc::Logger::GetGlobalLogger()->getLogLevel() <=                      \
         mrpc::LogLevel::Info) {                                                \
         mrpc::Logger::GetGlobalLogger()->pushLog(                              \
-            (new mrpc::LogEvent(mrpc::LogLevel::Info))->toString() + "[" +     \
+            mrpc::LogEvent(mrpc::LogLevel::Info).toString() + "[" +            \
             std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" +   \
             mrpc::formatString(str, ##__VA_ARGS__) + "\n");                    \
         mrpc::Logger::GetGlobalLogger()->log();                                \
@@ -49,7 +49,7 @@ std::string formatString(const char *str, Args &&...args) {
     if (mrpc::Logger::GetGlobalLogger()->getLogLevel() <=                      \
         mrpc::LogLevel::Error) {                                               \
         mrpc::Logger::GetGlobalLogger()->pushLog(                              \
-            (new mrpc::LogEvent(mrpc::LogLevel::Error))->toString() + "[" +    \
+            mrpc::LogEvent(mrpc::LogLevel::Error).toString() + "[" +          \
             std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]\t" +   \
             mrpc::formatString(str, ##__VA_ARGS__) + "\n");                    \
         mrpc::Logger::GetGlobalLogger()->log();                                \
@@ -58,20 +58,23 @@ std::string formatString(const char *str, Args &&...args) {
 enum LogLevel { Unknown = 0, Debug = 1, Info = 2, Error = 3 };
 
 std::string LogLevelToString(LogLevel level);
-LogLevel StringToLogLevel(const std::string &log_level);
+LogLevel StringToLogLevel(const std::string& log_level);
 
 class Logger {
+  public:
+	using s_ptr = std::shared_ptr<Logger>;
+
   public:
     explicit Logger(LogLevel level)
         : m_set_level(level) {}
 
-    void pushLog(const std::string &msg);
+    void pushLog(const std::string& msg);
 
     void log();
 
     LogLevel getLogLevel() const { return m_set_level; }
 
-    static std::shared_ptr<Logger> GetGlobalLogger(); // 线程安全的单例模式
+    static Logger::s_ptr GetGlobalLogger(); // 线程安全的单例模式
 
   private:
     LogLevel m_set_level;
@@ -82,8 +85,14 @@ class Logger {
 
 class LogEvent {
   public:
+	using s_ptr = std::shared_ptr<LogEvent>;
+
+  public:
     explicit LogEvent(LogLevel level)
-        : m_file_line(0), m_pid(0), m_thread_id(0), m_level(level) {}
+        : m_file_line(0)
+        , m_pid(0)
+        , m_thread_id(0)
+        , m_level(level) {}
 
     std::string getFileName() const { return m_flie_name; }
 

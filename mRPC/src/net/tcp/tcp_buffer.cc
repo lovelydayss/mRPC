@@ -6,11 +6,15 @@
 MRPC_NAMESPACE_BEGIN
 
 // 返回可读字节数
-int TcpBuffer::readAble() const { return m_write_index - m_write_index; }
+int TcpBuffer::readAble() const { return m_write_index - m_read_index; }
 
 // 返回可写的字节数
 int TcpBuffer::writeAble() const {
     return static_cast<int>(m_buffer.size()) - m_write_index;
+}
+
+int TcpBuffer::getBufferSize() const {
+    return static_cast<int>(m_buffer.size());
 }
 
 int TcpBuffer::readIndex() const { return m_read_index; }
@@ -25,6 +29,7 @@ void TcpBuffer::writeToBuffer(const char* buf, int size) {
     }
 
     memcpy(&m_buffer[m_write_index], buf, size);
+    m_write_index += size;
 }
 
 void TcpBuffer::readFromBuffer(std::vector<char>& re, int size) {
@@ -65,6 +70,18 @@ void TcpBuffer::adjustBuffer() {
     buffer.clear();
 }
 void TcpBuffer::moveReadIndex(int size) {
+
+    size_t j = m_write_index + size;
+    if (j >= m_buffer.size()) {
+        ERRORLOG("moveWriteIndex error, invalid size %d, old_read_index %d, "
+                 "buffer size %d",
+                 size, m_read_index, m_buffer.size());
+        return;
+    }
+    m_write_index = static_cast<int>(j);
+    adjustBuffer();
+}
+void TcpBuffer::moveWriteIndex(int size) {
 
     size_t j = m_write_index + size;
     if (j >= m_buffer.size()) {

@@ -12,13 +12,15 @@
 MRPC_NAMESPACE_BEGIN
 
 class Timer : public FdEvent {
+  public:
+    using s_ptr = std::shared_ptr<Timer>;
 
   public:
     Timer();
     ~Timer() = default;
 
-    void addTimerEvent(const std::shared_ptr<TimerEvent>& event);
-    void deleteTimerEvent(const std::shared_ptr<TimerEvent>& event);
+    void addTimerEvent(const TimerEvent::s_ptr& event);
+    void deleteTimerEvent(const TimerEvent::s_ptr& event);
 
     void onTimer();
 
@@ -26,7 +28,7 @@ class Timer : public FdEvent {
     void resetArriveTime();
 
   private:
-    std::multimap<int64_t, std::shared_ptr<TimerEvent>> m_pending_events;
+    std::multimap<int64_t, TimerEvent::s_ptr> m_pending_events;
     std::mutex m_mutex;
 };
 

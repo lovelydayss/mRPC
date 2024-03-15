@@ -12,6 +12,8 @@ MRPC_NAMESPACE_BEGIN
 // 封装一个定时器事件
 // 包含到达时间，时间间隔，是否重复，是否取消以及事件触发回调函数等
 class TimerEvent {
+    public:
+    using s_ptr = std::shared_ptr<TimerEvent>;
 
   public:
     TimerEvent(int interval, bool is_repeated, const std::function<void()>& cb);

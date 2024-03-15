@@ -24,7 +24,7 @@ Timer::Timer()
     listen(FdEvent::IN_EVENT, std::bind(&Timer::onTimer, this));
 }
 
-void Timer::addTimerEvent(const std::shared_ptr<TimerEvent>& event) {
+void Timer::addTimerEvent(const TimerEvent::s_ptr& event) {
     bool is_rest_timerfd = false;
 
     {
@@ -45,7 +45,7 @@ void Timer::addTimerEvent(const std::shared_ptr<TimerEvent>& event) {
 
     if (is_rest_timerfd) resetArriveTime();
 }
-void Timer::deleteTimerEvent(const std::shared_ptr<TimerEvent>& event) {
+void Timer::deleteTimerEvent(const TimerEvent::s_ptr& event) {
 
     event->setCancled(true);
 
@@ -82,7 +82,7 @@ void Timer::onTimer() {
     // 执行定时任务
     int64_t now = getNowMs();
 
-    std::vector<std::shared_ptr<TimerEvent>> ontime_events;
+    std::vector<TimerEvent::s_ptr> ontime_events;
 
     {
         std::lock_guard<std::mutex> lk(m_mutex);
@@ -139,8 +139,8 @@ void Timer::resetArriveTime() {
     value.it_value = ts;
 
     // 将最近事件绑定到 epoll 监听
-    int rt = timerfd_settime(m_fd, 0, &value, nullptr);
-    if (rt != 0) {
+    int ret = timerfd_settime(m_fd, 0, &value, nullptr);
+    if (ret != 0) {
         ERRORLOG("timerfd_settime error, errno=%d, error=%s", errno,
                  strerror(errno));
     }
