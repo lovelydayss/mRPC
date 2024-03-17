@@ -1,5 +1,7 @@
 #include "fd_event.h"
+#include "log.h"
 #include "utils.h"
+#include <cstdint>
 #include <fcntl.h>
 #include <sys/epoll.h>
 
@@ -10,8 +12,9 @@ FdEvent::FdEvent(int fd)
     memset(&m_listen_events, 0, sizeof(m_listen_events));
 }
 
-void FdEvent::listen(TriggerEvent event_type,
-                     const std::function<void()>& callback) {
+void FdEvent::listen(
+    TriggerEvent event_type, const std::function<void()>& callback) {
+
     if (event_type == TriggerEvent::IN_EVENT) {
         m_listen_events.events |= EPOLLIN;
         m_read_callback = callback;
@@ -23,24 +26,36 @@ void FdEvent::listen(TriggerEvent event_type,
     m_listen_events.data.ptr = this;
 }
 
-// 取消监听
 void FdEvent::cancel(TriggerEvent event_type) {
     m_listen_events.events &=
         event_type == TriggerEvent::IN_EVENT ? (~EPOLLIN) : (~EPOLLOUT);
 }
 
 const std::function<void()>& FdEvent::handler(TriggerEvent event_type) {
-    return event_type == TriggerEvent::IN_EVENT ? m_read_callback
-                                                : m_write_callback;
+
+    switch (event_type) {
+    case TriggerEvent::IN_EVENT:
+        return m_read_callback;
+    case TriggerEvent::OUT_EVENT:
+        return m_write_callback;
+    case TriggerEvent::ERROR_EVENT:
+        return m_error_callback;
+    default:
+        DEBUGLOG("wrong fd event type!");
+    }
 }
 
 void FdEvent::setNonBlock() const {
 
-    int flag = fcntl(m_fd, F_GETFL, 0);
-    if (flag & O_NONBLOCK) //
+    uint32_t flag = fcntl(m_fd, F_GETFL, 0);
+    
+    if (flag & O_NONBLOCK)
         return;
 
     fcntl(m_fd, F_SETFL, flag | O_NONBLOCK);
 }
 
+void FdEvent::setErrorCallback(const std::function<void()>& callback) {
+    m_error_callback = callback;
+} 
 MRPC_NAMESPACE_END

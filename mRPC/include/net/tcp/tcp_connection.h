@@ -20,7 +20,7 @@ enum TcpState {
 
 enum TcpConnectionType {
     TcpConnectionByServer = 1, // 作为服务端使用，代表跟对端客户端的连接
-    TcpConnectionByClient = 2, // 作为客户端使用，代表跟对赌服务端的连接
+    TcpConnectionByClient = 2, // 作为客户端使用，代表跟对端服务端的连接
 };
 
 class TcpConnection {
@@ -37,8 +37,10 @@ class TcpConnection {
     void excute();  // 处理逻辑
     void onWrite(); // 回发数据
 
-    void setState(const TcpState state) { m_state = state; }
     TcpState getState() const { return m_state; }
+    void setState(const TcpState state) { m_state = state; }
+
+    TcpConnectionType getConnectionType() const { return m_connection_type; }
     void setConnectionType(const TcpConnectionType Connection_type) {
         m_connection_type = Connection_type;
     }

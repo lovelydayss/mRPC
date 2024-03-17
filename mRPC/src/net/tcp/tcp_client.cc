@@ -1,5 +1,5 @@
 #include "tcp_client.h"
-#include "fd_event_group.h"
+#include "fd_event_pool.h"
 #include "utils.h"
 
 MRPC_NAMESPACE_BEGIN
@@ -14,7 +14,7 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr)
         return;
     }
 
-    m_fd_event = FdEventGroup::GetGlobalFdEventGroup()->getFdEvent(m_fd);
+    m_fd_event = FdEventPool::GetGlobalFdEventPool()->getFdEvent(m_fd);
     m_fd_event->setNonBlock();
 
     m_connection =

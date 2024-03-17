@@ -1,6 +1,6 @@
 #include "tcp_connection.h"
 #include "config.h"
-#include "fd_event_group.h"
+#include "fd_event_pool.h"
 #include "log.h"
 #include "net_addr.h"
 #include "utils.h"
@@ -19,7 +19,7 @@ TcpConnection::TcpConnection(const EventLoop::s_ptr& event_loop, int fd,
     m_out_buffer = std::make_shared<TcpBuffer>(
         Config::GetGlobalConfig()->getConnectionBufferSize());
 
-    m_fd_event = FdEventGroup::GetGlobalFdEventGroup()->getFdEvent(fd);
+    m_fd_event = FdEventPool::GetGlobalFdEventPool()->getFdEvent(fd);
     m_fd_event->setNonBlock();
     m_fd_event->listen(FdEvent::IN_EVENT,
                        std::bind(&TcpConnection::onRead, this));

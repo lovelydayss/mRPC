@@ -12,6 +12,16 @@ target("test_jsoncpp")
 
     add_files("mRPC/test/test_jsoncpp.cc")
 
+target("test_ffmpeg")
+    set_kind("binary")
+   
+    add_links("avutil", "avcodec", "avformat", "avdevice", "avfilter", "swscale", "swresample", "postproc")
+    --add_links("avcodec")
+    add_includedirs("/usr/local/include/ffmpeg")
+    add_linkdirs("/usr/local/lib")
+
+    add_files("mRPC/test/test_ffmpeg.cc")
+
 target("test_log")
     set_kind("binary")
     add_links("jsoncpp")
@@ -98,11 +108,14 @@ target("test_tcp_server")
     add_includedirs("mRPC/include/common")
     add_includedirs("mRPC/include/net")
     add_includedirs("mRPC/include/net/tcp")
-    add_includedirs("mRPC/include/net/protocol")
+    add_includedirs("mRPC/include/net/codec")
+    add_includedirs("mRPC/include/net/rpc")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
     add_files("mRPC/src/net/tcp/*.cc")
+    add_files("mRPC/src/net/codec/*.cc")
+    add_files("mRPC/src/net/rpc/*.cc")
     add_files("mRPC/test/test_tcp_server.cc")
 
 target("test_tcp_client")
@@ -116,12 +129,16 @@ target("test_tcp_client")
     add_includedirs("mRPC/include/common")
     add_includedirs("mRPC/include/net")
     add_includedirs("mRPC/include/net/tcp")
-    add_includedirs("mRPC/include/net/protocol")
+    add_includedirs("mRPC/include/net/codec")
+    add_includedirs("mRPC/include/net/rpc")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
     add_files("mRPC/src/net/tcp/*.cc")
+    add_files("mRPC/src/net/codec/*.cc")
+    add_files("mRPC/src/net/rpc/*.cc")
     add_files("mRPC/test/test_tcp_client.cc")
+
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --
