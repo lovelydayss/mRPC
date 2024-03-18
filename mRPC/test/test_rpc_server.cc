@@ -12,7 +12,7 @@ public:
 	void makeOrder(google::protobuf::RpcController* controller,
 	               const ::makeOrderRequest* request,
 	               ::makeOrderResponse* response,
-	               ::google::protobuf::Closure* done) {
+	               ::google::protobuf::Closure* done) override{
 		// DEBUGLOG("start sleep 5s");
 		// sleep(5);
 		// DEBUGLOG("end sleep 5s");
@@ -31,15 +31,13 @@ int main() {
 	mrpc::Config::GetGlobalConfig();
 
 	std::shared_ptr<OrderImpl> service = std::make_shared<OrderImpl>();
-	mrpc::RpcDispatcher::GetRpcDispatcher()->registerService(service);
+	mrpc::RpcDispatcher::GetGlobalRpcDispatcher()->registerService(service);
 
 	mrpc::IPNetAddr::s_ptr addr =
 	    std::make_shared<mrpc::IPNetAddr>("127.0.0.1", 12346);
-
 	DEBUGLOG("create addr %s", addr->toString().c_str());
 
 	mrpc::TcpServer tcp_server(addr);
-
 	tcp_server.start();
 
 	return 0;

@@ -24,7 +24,7 @@ public:
 	            TcpBuffer::s_ptr buffer) override;
 
 private:
-	static const char* encodeTinyPB(TinyPBProtocol::s_ptr, uint32_t& len);
+	static const char* encodeTinyPB(const TinyPBProtocol::s_ptr&, uint32_t& len);
 };
 
 MRPC_NAMESPACE_END

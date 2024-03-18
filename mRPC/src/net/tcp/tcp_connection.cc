@@ -1,18 +1,25 @@
 #include "tcp_connection.h"
 #include "config.h"
+#include "eventloop.h"
 #include "fd_event_pool.h"
 #include "log.h"
 #include "net_addr.h"
+#include "rpc_dispatcher.h"
+#include "tinypb_protocol.h"
 #include "utils.h"
 #include <memory>
 
 MRPC_NAMESPACE_BEGIN
 
-TcpConnection::TcpConnection(const EventLoop::s_ptr& event_loop, int fd,
-                             const NetAddr::s_ptr& peer_addr)
-    : m_event_loop(event_loop)
+TcpConnection::TcpConnection(const EventLoop::s_ptr& eventloop, int fd,
+                             const NetAddr::s_ptr& peer_addr,
+                             const NetAddr::s_ptr& local_addr,
+                             TcpConnectionType type)
+    : m_eventloop(eventloop)
     , m_peer_addr(peer_addr)
-    , m_fd(fd) {
+    , m_fd(fd)
+    , m_local_addr(local_addr)
+    , m_connection_type(type) {
 
 	m_in_buffer = std::make_shared<TcpBuffer>(
 	    Config::GetGlobalConfig()->getConnectionBufferSize());
@@ -23,7 +30,7 @@ TcpConnection::TcpConnection(const EventLoop::s_ptr& event_loop, int fd,
 	m_fd_event->setNonBlock();
 	m_fd_event->listen(FdEvent::IN_EVENT,
 	                   std::bind(&TcpConnection::onRead, this));
-	m_event_loop->addEpollEvent(m_fd_event);
+	m_eventloop->addEpollEvent(m_fd_event);
 }
 
 void TcpConnection::onRead() {
@@ -68,7 +75,6 @@ void TcpConnection::onRead() {
 	}
 
 	if (is_close) {
-		// TODO:
 		INFOLOG("peer closed, peer addr [%s], clientfd [%d]",
 		        m_peer_addr->toString().c_str(), m_fd);
 		clear();
@@ -79,30 +85,45 @@ void TcpConnection::onRead() {
 		ERRORLOG("not read all data");
 	}
 
-	// TODO: 简单的 echo, 后面补充 RPC 协议解析
 	excute();
 }
 
 void TcpConnection::excute() {
-	// 将 RPC 请求执行业务逻辑，获取 RPC 响应, 再把 RPC 响应发送回去
-	std::vector<char> tmp;
-	int size = m_in_buffer->readAble();
-	tmp.resize(size);
-	m_in_buffer->readFromBuffer(tmp, size);
+	if (m_connection_type == TcpConnectionByServer) {
+		// 将 RPC 请求执行业务逻辑，获取 RPC 响应, 再把 RPC 响应发送回去
+		std::vector<AbstractProtocol::s_ptr> require_messages;
+		std::vector<AbstractProtocol::s_ptr> respose_messages;
+		m_codec->decode(require_messages, m_in_buffer);
 
-	std::string msg;
-	for (size_t i = 0; i < tmp.size(); ++i) {
-		msg += tmp[i];
+		for (auto& message : require_messages) {
+			// 1. 针对每一个请求，调用 rpc 方法，获取响应 message
+			// 2. 将响应 message 放入到发送缓冲区，监听可写事件回包
+			INFOLOG("success get request[%s] from client[%s]",
+			        message->m_msg_id.c_str(), m_peer_addr->toString().c_str());
+
+			std::shared_ptr<TinyPBProtocol> respose_message =
+			    std::make_shared<TinyPBProtocol>();
+
+			RpcDispatcher::GetGlobalRpcDispatcher()->dispatch(
+			    message, respose_message, std::shared_ptr<TcpConnection>(this));
+			respose_messages.emplace_back(respose_message);
+		}
+
+		m_codec->encode(respose_messages, m_out_buffer);
+		listenWrite();
+
+	} else {
+		// 从 buffer 里 decode 得到 message 对象, 执行其回调
+		std::vector<AbstractProtocol::s_ptr> messages;
+		m_codec->decode(messages, m_in_buffer);
+
+		for (auto& message : messages) {
+			std::string msg_id = message->m_msg_id;
+			auto it = m_read_dones.find(msg_id);
+			if (it != m_read_dones.end())
+				it->second(message);
+		}
 	}
-
-	INFOLOG("success get request[%s] from client[%s]", msg.c_str(),
-	        m_peer_addr->toString().c_str());
-
-	m_out_buffer->writeToBuffer(msg.c_str(), static_cast<int>(msg.length()));
-
-	m_fd_event->listen(FdEvent::OUT_EVENT,
-	                   std::bind(&TcpConnection::onWrite, this));
-	m_event_loop->addEpollEvent(m_fd_event);
 }
 
 void TcpConnection::onWrite() {
@@ -113,6 +134,20 @@ void TcpConnection::onWrite() {
 		         "clientfd[%d]",
 		         m_peer_addr->toString().c_str(), m_fd);
 		return;
+	}
+
+	if (m_connection_type == TcpConnectionByClient) {
+		//  1. 将 message encode 得到字节流
+		// 2. 将字节流入到 buffer 里面，然后全部发送
+
+		std::vector<AbstractProtocol::s_ptr> messages;
+
+		messages.reserve(m_write_dones.size());
+		for (auto& m_write_done : m_write_dones) {
+			messages.push_back(m_write_done.first);
+		}
+
+		m_codec->encode(messages, m_out_buffer);
 	}
 
 	bool is_write_all = false;
@@ -144,7 +179,14 @@ void TcpConnection::onWrite() {
 	}
 	if (is_write_all) {
 		m_fd_event->cancel(FdEvent::OUT_EVENT);
-		m_event_loop->addEpollEvent(m_fd_event);
+		m_eventloop->addEpollEvent(m_fd_event);
+	}
+
+	if (m_connection_type == TcpConnectionByClient) {
+		for (auto& m_write_done : m_write_dones) {
+			m_write_done.second(m_write_done.first);
+		}
+		m_write_dones.clear();
 	}
 }
 
@@ -156,7 +198,7 @@ void TcpConnection::clear() {
 	m_fd_event->cancel(FdEvent::IN_EVENT);  // 关闭读入事件
 	m_fd_event->cancel(FdEvent::OUT_EVENT); // 关闭输出事件
 
-	m_event_loop->deleteEpollEvent(m_fd_event); // 将事件从 epoll 中取消注册
+	m_eventloop->deleteEpollEvent(m_fd_event); // 将事件从 epoll 中取消注册
 
 	m_state = Closed;
 }
@@ -172,6 +214,32 @@ void TcpConnection::shutDown() {
 	// 发送 FIN 报文， 触发了四次挥手的第一个阶段
 	// 当 fd 发生可读事件，但是可读的数据为0，即 对端发送了 FIN
 	shutdown(m_fd, SHUT_RDWR);
+}
+
+void TcpConnection::listenWrite() {
+
+	m_fd_event->listen(FdEvent::OUT_EVENT,
+	                   std::bind(&TcpConnection::onWrite, this));
+	m_eventloop->addEpollEvent(m_fd_event);
+}
+
+void TcpConnection::listenRead() {
+
+	m_fd_event->listen(FdEvent::IN_EVENT,
+	                   std::bind(&TcpConnection::onRead, this));
+	m_eventloop->addEpollEvent(m_fd_event);
+}
+
+void TcpConnection::pushSendMessage(
+    const AbstractProtocol::s_ptr& message,
+    const std::function<void(AbstractProtocol::s_ptr)>& done) {
+	m_write_dones.emplace_back(message, done);
+}
+
+void TcpConnection::pushReadMessage(
+    const std::string& msg_id,
+    const std::function<void(AbstractProtocol::s_ptr)>& done) {
+	m_read_dones.insert(std::make_pair(msg_id, done));
 }
 
 MRPC_NAMESPACE_END

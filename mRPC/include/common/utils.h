@@ -11,6 +11,10 @@
 
 MRPC_NAMESPACE_BEGIN
 
+#define SECONDS(x) (int64_t(x) * 1000 * 1000 * 1000) // s->ns
+#define MILLISECONDS(x) (int64_t(x) * 1000 * 1000)   // ms->ns
+#define MICROSECONDS(x) (int64_t(x) * 1000)          // us->ns
+
 pid_t getPid();
 
 pid_t getThreadId();

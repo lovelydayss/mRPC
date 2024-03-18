@@ -8,6 +8,7 @@
     "server": {
         "io_thread_nums": 1,
         "fd_event_nums": 128,
-        "connection_bufffer_size": 128
+        "connection_bufffer_size": 128,
+        "connection_pool_size":1000
     }
 }

@@ -167,7 +167,7 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 	}
 }
 
-const char* TinyPBCodec::encodeTinyPB(TinyPBProtocol::s_ptr message,
+const char* TinyPBCodec::encodeTinyPB(const TinyPBProtocol::s_ptr& message,
                                       uint32_t& len) {
 	// 填充 msg id
     if (message->m_msg_id.empty()) {

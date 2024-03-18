@@ -139,6 +139,53 @@ target("test_tcp_client")
     add_files("mRPC/src/net/rpc/*.cc")
     add_files("mRPC/test/test_tcp_client.cc")
 
+target("test_rpc_server")
+    set_kind("binary")
+
+    add_links("jsoncpp")
+    add_links("protobuf")
+    add_includedirs("/usr/local/include")
+    add_linkdirs("/usr/local/lib")
+
+    add_includedirs("mRPC/include/common")
+    add_includedirs("mRPC/include/net")
+    add_includedirs("mRPC/include/net/tcp")
+    add_includedirs("mRPC/include/net/codec")
+    add_includedirs("mRPC/include/net/rpc")
+    add_includedirs("mRPC/test")
+    
+    add_files("mRPC/src/common/*.cc")
+    add_files("mRPC/src/net/*.cc")
+    add_files("mRPC/src/net/tcp/*.cc")
+    add_files("mRPC/src/net/codec/*.cc")
+    add_files("mRPC/src/net/rpc/*.cc")
+    add_files("mRPC/test/order.pb.cc")
+    add_files("mRPC/test/test_rpc_server.cc")
+
+
+target("test_rpc_client")
+    set_kind("binary")
+
+    add_links("jsoncpp")
+    add_links("protobuf")
+    add_includedirs("/usr/local/include")
+    add_linkdirs("/usr/local/lib")
+
+    add_includedirs("mRPC/include/common")
+    add_includedirs("mRPC/include/net")
+    add_includedirs("mRPC/include/net/tcp")
+    add_includedirs("mRPC/include/net/codec")
+    add_includedirs("mRPC/include/net/rpc")
+    add_includedirs("mRPC/test")
+    
+    add_files("mRPC/src/common/*.cc")
+    add_files("mRPC/src/net/*.cc")
+    add_files("mRPC/src/net/tcp/*.cc")
+    add_files("mRPC/src/net/codec/*.cc")
+    add_files("mRPC/src/net/rpc/*.cc")
+    add_files("mRPC/test/order.pb.cc")
+    add_files("mRPC/test/test_rpc_client.cc")
+
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

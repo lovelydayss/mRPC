@@ -37,14 +37,14 @@ void TcpServer::onAccept() {
 	NetAddr::s_ptr peer_addr = re.second;
 	m_client_count++;
 
-	// 把 cleintfd 添加到任意 IO 线程里面
+	// 把 cleintfd(connection) 添加到任意 IO 线程里面
 	IOThread::s_ptr io_thread = m_io_thread_pool->getIOThread();
 	TcpConnection::s_ptr connection = std::make_shared<TcpConnection>(
-	    io_thread->getEventLoop(), client_fd, peer_addr);
+	    io_thread->getEventLoop(), client_fd, peer_addr, m_local_addr);
 	connection->setState(Connected);
-	m_clients.insert(connection);
 
-	INFOLOG("TcpServer succ get client, fd=%d", client_fd);
+	m_connections.insert(connection);
+	INFOLOG("TcpServer succ get client connection, fd=%d", client_fd);
 }
 
 MRPC_NAMESPACE_END

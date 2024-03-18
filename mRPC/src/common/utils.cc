@@ -30,8 +30,8 @@ pid_t getThreadId() {
 
 int64_t getNowNanoseconds() {
 
-	std::chrono::system_clock::time_point now =
-	    std::chrono::system_clock::now();
+	std::chrono::high_resolution_clock::time_point now =
+	    std::chrono::high_resolution_clock::now();
 	auto ms = std::chrono::duration_cast<std::chrono::nanoseconds>(
 	    now.time_since_epoch());
 

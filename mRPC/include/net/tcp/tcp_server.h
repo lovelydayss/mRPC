@@ -35,7 +35,7 @@ private:
 	FdEvent::s_ptr m_listen_fd_event;
 	int m_client_count{0};
 
-	std::set<TcpConnection::s_ptr> m_clients;
+	std::set<TcpConnection::s_ptr> m_connections;
 };
 
 MRPC_NAMESPACE_END

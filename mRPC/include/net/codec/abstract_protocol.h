@@ -6,7 +6,7 @@
 
 MRPC_NAMESPACE_BEGIN
 
-enum ProtocolType{HTTP_PROTOCOL, TINYPB_PROTOCOL};
+enum ProtocolType { HTTP_PROTOCOL, TINYPB_PROTOCOL };
 
 class AbstractProtocol {
 public:
@@ -14,6 +14,12 @@ public:
 
 public:
 	std::string m_msg_id; // massage id 标识请求和响应
+};
+
+class MsgIDUtil {
+
+public:
+	static std::string GenMsgID();
 };
 
 MRPC_NAMESPACE_END
