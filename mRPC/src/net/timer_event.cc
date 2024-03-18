@@ -15,7 +15,7 @@ TimerEvent::TimerEvent(int interval, bool is_repeated,
 
 void TimerEvent::resetArriveTime() {
 
-	m_arrive_time = getNowMs() + m_interval;
+	m_arrive_time = getNowNanoseconds() + m_interval;
 	DEBUGLOG("success create timer event, will excute at [%lld]",
 	         m_arrive_time);
 }

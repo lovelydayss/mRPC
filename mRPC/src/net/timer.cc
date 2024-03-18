@@ -79,7 +79,7 @@ void Timer::onTimer() {
 	}
 
 	// 执行定时任务
-	int64_t now = getNowMs();
+	int64_t now = getNowNanoseconds();
 
 	std::vector<TimerEvent::s_ptr> ontime_events;
 
@@ -121,18 +121,18 @@ void Timer::resetArriveTime() {
 
 	ul.unlock();
 
-	int64_t now = getNowMs(); // 当前时间
-	int64_t interval = 0;     // 时间间隔
+	int64_t now = getNowNanoseconds(); // 当前时间
+	int64_t interval = 0;               // 时间间隔
 
 	if (event_begin->second->getArriveTime() > now)
 		interval = event_begin->second->getArriveTime() - now;
 	else
-		interval = 100;
+		interval = MILLISECONDS(100);
 
 	timespec ts{};
 	memset(&ts, 0, sizeof(ts));
-	ts.tv_sec = interval / 1000;
-	ts.tv_nsec = (interval % 1000) * 1000000;
+	ts.tv_sec = interval / SECONDS(1);
+	ts.tv_nsec = interval % SECONDS(1);
 
 	itimerspec value{};
 	memset(&value, 0, sizeof(value));

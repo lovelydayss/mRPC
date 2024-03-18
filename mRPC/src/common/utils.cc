@@ -28,11 +28,11 @@ pid_t getThreadId() {
 	return static_cast<pid_t>(syscall(SYS_gettid));
 }
 
-int64_t getNowMs() {
+int64_t getNowNanoseconds() {
 
 	std::chrono::system_clock::time_point now =
 	    std::chrono::system_clock::now();
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+	auto ms = std::chrono::duration_cast<std::chrono::nanoseconds>(
 	    now.time_since_epoch());
 
 	return ms.count();

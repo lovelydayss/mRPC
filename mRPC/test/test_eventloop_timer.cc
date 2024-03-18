@@ -58,7 +58,7 @@ int main() {
 
 	int i = 0;
 	mrpc::TimerEvent::s_ptr timer_event = std::make_shared<mrpc::TimerEvent>(
-	    1000, true, [&i]() { INFOLOG("trigger timer event, count=%d", i++); });
+	    MILLISECONDS(1000), true, [&i]() { INFOLOG("trigger timer event, count=%d", i++); });
 
 	mrpc::EventLoop::GetThreadLocalEventLoop()->addTimerEvent(timer_event);
 	mrpc::EventLoop::GetThreadLocalEventLoop()->loop();
