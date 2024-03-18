@@ -13,30 +13,29 @@
 MRPC_NAMESPACE_BEGIN
 
 class TcpServer {
-  public:
-    using s_ptr = std::shared_ptr<TcpServer>;
+public:
+	using s_ptr = std::shared_ptr<TcpServer>;
 
-  public:
-    explicit TcpServer(const NetAddr::s_ptr& local_addr);
-    ~TcpServer() = default;
+public:
+	explicit TcpServer(const NetAddr::s_ptr& local_addr);
+	~TcpServer() = default;
 
-    void start();
+	void start();
 
-  private:
-    void onAccept();
+private:
+	void onAccept();
 
-  private:
-    TcpAcceptor::s_ptr m_accepter;
-    NetAddr::s_ptr m_local_addr;
+private:
+	TcpAcceptor::s_ptr m_accepter;
+	NetAddr::s_ptr m_local_addr;
 
-    EventLoop::s_ptr m_main_event_loop;
-    IOThreadGroup::s_ptr m_io_thread_group;
+	EventLoop::s_ptr m_main_event_loop;
+	IOThreadGroup::s_ptr m_io_thread_group;
 
-    FdEvent::s_ptr m_listen_fd_event;
-    int m_client_count{0};
+	FdEvent::s_ptr m_listen_fd_event;
+	int m_client_count{0};
 
-    std::set<TcpConnection::s_ptr> m_clients;
-
+	std::set<TcpConnection::s_ptr> m_clients;
 };
 
 MRPC_NAMESPACE_END

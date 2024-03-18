@@ -1,11 +1,11 @@
+#include <iostream>
 #include <json/json.h>
 #include <string>
-#include <iostream>
 using namespace std;
 
-int main()
-{
-	//std::string strValue = "{\"name\":\"json\",\"array\":[{\"cpp\":\"jsoncpp\"},{\"java\":\"jsoninjava\"},{\"php\":\"support\"}]}";
+int main() {
+	// std::string strValue =
+	// "{\"name\":\"json\",\"array\":[{\"cpp\":\"jsoncpp\"},{\"java\":\"jsoninjava\"},{\"php\":\"support\"}]}";
 
 	// 构建json数组
 	Json::Value array;
@@ -37,7 +37,7 @@ int main()
 
 	string data = writer.write(array);
 
-	cout<<data<<endl;
+	cout << data << endl;
 	// cout<<array.toStyledString()<<endl;
 
 	// 解析Json字符串
@@ -49,8 +49,7 @@ int main()
 
 	if (reader.parse(strValue, value)) // json字符串转为json对象
 	{
-		for (unsigned int i = 0; i < value["array"].size(); i++)
-		{
+		for (unsigned int i = 0; i < value["array"].size(); i++) {
 			string name = value["array"][i]["name"].asString();
 			int age = value["array"][i]["age"].asInt();
 			string sex = value["array"][i]["sex"].asString();

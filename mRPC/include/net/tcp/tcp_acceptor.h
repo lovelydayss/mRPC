@@ -8,22 +8,22 @@
 MRPC_NAMESPACE_BEGIN
 
 class TcpAcceptor {
-  public:
-    using s_ptr = std::shared_ptr<TcpAcceptor>;
+public:
+	using s_ptr = std::shared_ptr<TcpAcceptor>;
 
-  public:
-    explicit TcpAcceptor(const NetAddr::s_ptr& local_addr);
-    ~TcpAcceptor() = default;
+public:
+	explicit TcpAcceptor(const NetAddr::s_ptr& local_addr);
+	~TcpAcceptor() = default;
 
-    std::pair<int, NetAddr::s_ptr> accept() const;
+	std::pair<int, NetAddr::s_ptr> accept() const;
 
-    int getListenFd() const { return m_listenfd; }
+	int getListenFd() const { return m_listenfd; }
 
-  private:
-    NetAddr::s_ptr m_local_addr; // 服务端监听的地址，addr -> ip:port
+private:
+	NetAddr::s_ptr m_local_addr; // 服务端监听的地址，addr -> ip:port
 
-    int m_family{-1};   // 类型
-    int m_listenfd{-1}; // 监听套接字
+	int m_family{-1};   // 类型
+	int m_listenfd{-1}; // 监听套接字
 };
 
 MRPC_NAMESPACE_END
