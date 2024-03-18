@@ -2,7 +2,7 @@
 #include "config.h"
 #include "fd_event.h"
 #include "io_thread.h"
-#include "io_thread_group.h"
+#include "io_thread_pool.h"
 #include "log.h"
 #include "timer_event.h"
 #include <arpa/inet.h>
@@ -61,16 +61,16 @@ void test_io_thread() {
 
 	// io_thread.join();
 
-	mrpc::IOThreadGroup io_thread_group(2);
-	mrpc::IOThread::s_ptr io_thread = io_thread_group.getIOThread();
+	mrpc::IOThreadPool io_thread_pool(2);
+	mrpc::IOThread::s_ptr io_thread = io_thread_pool.getIOThread();
 	io_thread->getEventLoop()->addEpollEvent(event);
 	io_thread->getEventLoop()->addTimerEvent(timer_event);
 
-	mrpc::IOThread::s_ptr io_thread2 = io_thread_group.getIOThread();
+	mrpc::IOThread::s_ptr io_thread2 = io_thread_pool.getIOThread();
 	io_thread2->getEventLoop()->addTimerEvent(timer_event);
 
-	io_thread_group.start();
-	io_thread_group.join();
+	io_thread_pool.start();
+	io_thread_pool.join();
 }
 
 int main() {

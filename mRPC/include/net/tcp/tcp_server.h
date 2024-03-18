@@ -3,7 +3,7 @@
 
 #include "eventloop.h"
 #include "fd_event.h"
-#include "io_thread_group.h"
+#include "io_thread_pool.h"
 #include "net_addr.h"
 #include "tcp_acceptor.h"
 #include "tcp_connection.h"
@@ -30,7 +30,7 @@ private:
 	NetAddr::s_ptr m_local_addr;
 
 	EventLoop::s_ptr m_main_event_loop;
-	IOThreadGroup::s_ptr m_io_thread_group;
+	IOThreadPool::s_ptr m_io_thread_pool;
 
 	FdEvent::s_ptr m_listen_fd_event;
 	int m_client_count{0};

@@ -1,5 +1,5 @@
-#ifndef MRPC_NET_IO_THREAD_GROUP_H
-#define MRPC_NET_IO_THREAD_GROUP_H
+#ifndef MRPC_NET_IO_THREAD_POOL_H
+#define MRPC_NET_IO_THREAD_POOL_H
 
 #include "io_thread.h"
 #include "utils.h"
@@ -7,14 +7,14 @@
 
 MRPC_NAMESPACE_BEGIN
 
-class IOThreadGroup {
+class IOThreadPool {
 public:
-	using s_ptr = std::shared_ptr<IOThreadGroup>;
+	using s_ptr = std::shared_ptr<IOThreadPool>;
 
 public:
-	explicit IOThreadGroup(int size);
+	explicit IOThreadPool(int size);
 
-	~IOThreadGroup() = default;
+	~IOThreadPool() = default;
 
 	void start();
 	void join();

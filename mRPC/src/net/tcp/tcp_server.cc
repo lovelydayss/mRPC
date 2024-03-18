@@ -3,7 +3,7 @@
 #include "eventloop.h"
 #include "fd_event.h"
 #include "io_thread.h"
-#include "io_thread_group.h"
+#include "io_thread_pool.h"
 #include "net_addr.h"
 #include "tcp_acceptor.h"
 #include "tcp_connection.h"
@@ -17,7 +17,7 @@ TcpServer::TcpServer(const NetAddr::s_ptr& local_addr)
 
 	m_accepter = std::make_shared<TcpAcceptor>(m_local_addr);
 	m_main_event_loop = EventLoop::GetThreadLocalEventLoop();
-	m_io_thread_group = std::make_shared<IOThreadGroup>(
+	m_io_thread_pool = std::make_shared<IOThreadPool>(
 	    Config::GetGlobalConfig()->getIOThreadNums());
 
 	m_listen_fd_event = std::make_shared<FdEvent>(m_accepter->getListenFd());
@@ -27,7 +27,7 @@ TcpServer::TcpServer(const NetAddr::s_ptr& local_addr)
 }
 
 void TcpServer::start() {
-	m_io_thread_group->start();
+	m_io_thread_pool->start();
 	m_main_event_loop->loop();
 }
 
@@ -38,7 +38,7 @@ void TcpServer::onAccept() {
 	m_client_count++;
 
 	// 把 cleintfd 添加到任意 IO 线程里面
-	IOThread::s_ptr io_thread = m_io_thread_group->getIOThread();
+	IOThread::s_ptr io_thread = m_io_thread_pool->getIOThread();
 	TcpConnection::s_ptr connection = std::make_shared<TcpConnection>(
 	    io_thread->getEventLoop(), client_fd, peer_addr);
 	connection->setState(Connected);

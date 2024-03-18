@@ -25,7 +25,7 @@ public:
 
 private:
 	int m_size{0};
-	std::vector<FdEvent::s_ptr> m_fd_group;
+	std::vector<FdEvent::s_ptr> m_fds;
 	std::mutex m_mutex;
 };
 
