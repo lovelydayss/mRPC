@@ -93,8 +93,7 @@ target("test_net_addr")
     add_includedirs("mRPC/include/net/tcp")
     
     add_files("mRPC/src/common/*.cc")
-    add_files("mRPC/src/net/*.cc")
-    add_files("mRPC/src/net/tcp/*.cc")
+    add_files("mRPC/src/net/net_addr.cc")
     add_files("mRPC/test/test_net_addr.cc")
 
 target("test_tcp_server")

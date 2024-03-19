@@ -44,9 +44,8 @@ MRPC_NAMESPACE_BEGIN
 		ERRORLOG("failed epoll_ctl when delete fd, errno=%d, error=%s", errno, \
 		         strerror(errno));                                             \
 	}                                                                          \
-	DEBUGLOG("delete event success, fd[%d]", event->getFd());				   \
+	DEBUGLOG("delete event success, fd[%d]", event->getFd());                  \
 	m_listen_fds.erase(event->getFd());
-
 
 static thread_local EventLoop::s_ptr t_current_EventLoop = nullptr;
 static thread_local std::once_flag t_singleton_EventLoop;
@@ -105,7 +104,7 @@ void EventLoop::loop() {
 		epoll_event result_events[g_epoll_max_events];
 		int ret =
 		    epoll_wait(m_epoll_fd, result_events, g_epoll_max_events, timeout);
-		// DEBUGLOG("now end epoll_wait, ret = %d", ret);
+		DEBUGLOG("now end epoll_wait, ret = %d", ret);
 
 		if (ret < 0) {
 			ERRORLOG("epoll_wait error, errno=", errno);
@@ -133,7 +132,8 @@ void EventLoop::loop() {
 					addTask(fd_event->handler(FdEvent::OUT_EVENT));
 				}
 				// EPOLLHUP EPOLLERR
-				if (trigger_event.events & EPOLLERR) {
+				// if (trigger_event.events & EPOLLERR) {
+				else {
 					DEBUGLOG("fd %d trigger EPOLLERROR event",
 					         fd_event->getFd())
 

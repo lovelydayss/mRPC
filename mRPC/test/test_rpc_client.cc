@@ -27,7 +27,7 @@ int main() {
 
 	NEWRPCCONTROLLER(controller);
 	controller->SetMsgId("99998888");
-	controller->SetTimeout(SECONDS(1));
+	controller->SetTimeout(SECONDS(100000));
 
 	std::shared_ptr<mrpc::RpcClosure> closure = std::make_shared<
 	    mrpc::RpcClosure>([request, response, channel, controller]() mutable {

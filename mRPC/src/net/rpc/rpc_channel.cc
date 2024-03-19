@@ -112,6 +112,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 		channel->getTcpClient()->writeMessage(
 		    req_protocol, [req_protocol, channel, my_controller,
 		                   this](const AbstractProtocol::s_ptr&) mutable {
+
 			    INFOLOG(
 			        "%s | send rpc request success. call method name[%s], peer "
 			        "addr[%s], local addr[%s]",
