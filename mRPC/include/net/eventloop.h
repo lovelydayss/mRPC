@@ -32,6 +32,7 @@ public:
 	void deleteEpollEvent(const FdEvent::s_ptr& event);
 
 	void addTimerEvent(const TimerEvent::s_ptr& event);
+	void deleteTimerEvent(const TimerEvent::s_ptr& event);
 
 	bool isInLoopThread() const;
 	bool isLooping() const;

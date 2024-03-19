@@ -2,7 +2,6 @@
 #define MRPC_NET_RPC_RPC_DISPATCHER_H
 
 #include "abstract_protocol.h"
-#include "tcp_connection.h"
 #include "tinypb_protocol.h"
 #include "utils.h"
 #include <google/protobuf/service.h>
@@ -10,6 +9,8 @@
 #include <memory>
 
 MRPC_NAMESPACE_BEGIN
+
+class TcpConnection;
 
 class RpcDispatcher {
 
@@ -24,7 +25,7 @@ public:
 	// 任务分发
 	void dispatch(const AbstractProtocol::s_ptr& request,
 	              const AbstractProtocol::s_ptr& response,
-	              const TcpConnection::s_ptr& connection);
+	              TcpConnection* connection);
 
 	// 注册服务
 	void registerService(const service_s_ptr& service);

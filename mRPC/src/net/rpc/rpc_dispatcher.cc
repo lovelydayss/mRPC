@@ -1,7 +1,9 @@
 #include "rpc_dispatcher.h"
 #include "error_code.h"
 #include "rpc_controller.h"
+#include "tcp_connection.h"
 #include "utils.h"
+#include "log.h"
 #include <cstddef>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
@@ -25,11 +27,11 @@ const RpcDispatcher::s_ptr& RpcDispatcher::GetGlobalRpcDispatcher() {
 
 void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
                              const AbstractProtocol::s_ptr& response,
-                             const TcpConnection::s_ptr& connection) {
+                             TcpConnection* connection) {
 
-	std::shared_ptr<TinyPBProtocol> req_protocol =
+	TinyPBProtocol::s_ptr req_protocol =
 	    std::static_pointer_cast<TinyPBProtocol>(request);
-	std::shared_ptr<TinyPBProtocol> rsp_protocol =
+	TinyPBProtocol::s_ptr rsp_protocol =
 	    std::static_pointer_cast<TinyPBProtocol>(response);
 
 	std::string method_full_name = req_protocol->m_method_name;
@@ -57,9 +59,10 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 		return;
 	}
 
-	service_s_ptr service = (*it).second;
-	auto method = std::shared_ptr<const google::protobuf::MethodDescriptor>(
-	    service->GetDescriptor()->FindMethodByName(method_name));
+	service_s_ptr service = it->second;
+	const google::protobuf::MethodDescriptor* method =
+	    service->GetDescriptor()->FindMethodByName(method_name);
+
 	if (method == nullptr) {
 		ERRORLOG("%s | method neame[%s] not found in service[%s]",
 		         req_protocol->m_msg_id.c_str(), method_name.c_str(),
@@ -69,8 +72,8 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 		return;
 	}
 
-	auto req_msg = std::shared_ptr<google::protobuf::Message>(
-	    service->GetRequestPrototype(method.get()).New());
+	google::protobuf::Message* req_msg =
+	    service->GetRequestPrototype(method).New();
 
 	// 反序列化，将 pb_data 反序列化为 req_msg
 	if (!req_msg->ParseFromString(req_protocol->m_pb_data)) {
@@ -78,22 +81,25 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 		         method_name.c_str(), service_name.c_str());
 		setTinyPBError(rsp_protocol, ERROR_FAILED_DESERIALIZE,
 		               "deserilize error");
+		if (req_msg != NULL) {
+			delete req_msg;
+			req_msg = NULL;
+		}
 		return;
 	}
 
 	INFOLOG("%s | get rpc request[%s]", req_protocol->m_msg_id.c_str(),
 	        req_msg->ShortDebugString().c_str());
 
-	auto rsp_msg = std::shared_ptr<google::protobuf::Message>(
-	    service->GetResponsePrototype(method.get()).New());
+	google::protobuf::Message* rsp_msg =
+	    service->GetResponsePrototype(method).New();
 
 	RpcController rpcController;
 	rpcController.SetLocalAddr(connection->getLocalAddr());
 	rpcController.SetPeerAddr(connection->getPeerAddr());
 	rpcController.SetMsgId(req_protocol->m_msg_id);
 
-	service->CallMethod(method.get(), &rpcController, req_msg.get(),
-	                    rsp_msg.get(), nullptr);
+	service->CallMethod(method, &rpcController, req_msg, rsp_msg, NULL);
 
 	if (!rsp_msg->SerializeToString(&(rsp_protocol->m_pb_data))) {
 		ERRORLOG("%s | serilize error, origin message [%s]",
@@ -101,6 +107,15 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 		         rsp_msg->ShortDebugString().c_str());
 		setTinyPBError(rsp_protocol, ERROR_SERVICE_NOT_FOUND, "serilize error");
 		return;
+
+		if (req_msg != nullptr) {
+			delete req_msg;
+			req_msg = nullptr;
+		}
+		if (rsp_msg != nullptr) {
+			delete rsp_msg;
+			rsp_msg = nullptr;
+		}
 	}
 
 	rsp_protocol->m_err_code = 0;
@@ -108,6 +123,14 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	        req_protocol->m_msg_id.c_str(), req_msg->ShortDebugString().c_str(),
 	        rsp_msg->ShortDebugString().c_str());
 
+	if (req_msg != nullptr) {
+		delete req_msg;
+		req_msg = nullptr;
+	}
+	if (rsp_msg != nullptr) {
+		delete rsp_msg;
+		rsp_msg = nullptr;
+	}
 }
 
 void RpcDispatcher::registerService(const service_s_ptr& service) {

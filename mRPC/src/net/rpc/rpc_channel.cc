@@ -1,6 +1,5 @@
 #include "rpc_channel.h"
 #include "error_code.h"
-#include "timer_event.h"
 #include "tinypb_protocol.h"
 #include "utils.h"
 #include <google/protobuf/descriptor.h>
@@ -72,7 +71,6 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 	s_ptr channel = shared_from_this();
 
 	// 处理超时请求
-	/*
 	m_timer_event = std::make_shared<TimerEvent>(
 	    my_controller->GetTimeout(), false, [my_controller, channel]() mutable {
 		    my_controller->StartCancel();
@@ -88,9 +86,8 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 	    });
 
 	m_client->addTimerEvent(m_timer_event);
-	*/
 
-	m_client->asyncConnect([req_protocol, channel]() mutable {
+	m_client->asyncConnect([req_protocol, channel, this]() mutable {
 		RpcController* my_controller =
 		    dynamic_cast<RpcController*>(channel->getController());
 
@@ -113,8 +110,8 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 		        channel->getTcpClient()->getLocalAddr()->toString().c_str());
 
 		channel->getTcpClient()->writeMessage(
-		    req_protocol, [req_protocol, channel, my_controller](
-		                      const AbstractProtocol::s_ptr&) mutable {
+		    req_protocol, [req_protocol, channel, my_controller,
+		                   this](const AbstractProtocol::s_ptr&) mutable {
 			    INFOLOG(
 			        "%s | send rpc request success. call method name[%s], peer "
 			        "addr[%s], local addr[%s]",
@@ -128,11 +125,10 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 
 			    channel->getTcpClient()->readMessage(
 			        req_protocol,
-			        [channel, my_controller](
-			            const AbstractProtocol::s_ptr& msg) mutable {
+			        [channel, my_controller,
+			         this](const AbstractProtocol::s_ptr& msg) mutable {
 				        std::shared_ptr<mrpc::TinyPBProtocol> rsp_protocol =
-				            std::static_pointer_cast<mrpc::TinyPBProtocol>(
-				                msg);
+				            std::static_pointer_cast<mrpc::TinyPBProtocol>(msg);
 				        INFOLOG("%s | success get rpc response, call method "
 				                "name[%s], peer addr[%s], local addr[%s]",
 				                rsp_protocol->m_msg_id.c_str(),
@@ -147,7 +143,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 				                    .c_str());
 
 				        // 当成功读取到回包后， 取消定时任务
-				        // channel->getTimerEvent()->setCancled(true);
+				        m_client->deleteTimerEvent(m_timer_event);
 
 				        if (!(channel->getResponse()->ParseFromString(
 				                rsp_protocol->m_pb_data))) {

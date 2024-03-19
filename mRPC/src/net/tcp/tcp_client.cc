@@ -56,7 +56,7 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
 }
 
 TcpClient::~TcpClient() {
-	DEBUGLOG("TcpClient::~TcpClient()");
+	DEBUGLOG("~TcpClient()");
 	if (m_fd > 0) {
 		close(m_fd);
 	}

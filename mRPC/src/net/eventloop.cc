@@ -105,7 +105,7 @@ void EventLoop::loop() {
 		epoll_event result_events[g_epoll_max_events];
 		int ret =
 		    epoll_wait(m_epoll_fd, result_events, g_epoll_max_events, timeout);
-		DEBUGLOG("now end epoll_wait, ret = %d", ret);
+		// DEBUGLOG("now end epoll_wait, ret = %d", ret);
 
 		if (ret < 0) {
 			ERRORLOG("epoll_wait error, errno=", errno);
@@ -178,6 +178,10 @@ void EventLoop::deleteEpollEvent(const FdEvent::s_ptr& event) {
 
 void EventLoop::addTimerEvent(const TimerEvent::s_ptr& event) {
 	m_timer->addTimerEvent(event);
+}
+
+void EventLoop::deleteTimerEvent(const TimerEvent::s_ptr& event) {
+	m_timer->deleteTimerEvent(event);
 }
 
 bool EventLoop::isInLoopThread() const { return getThreadId() == m_thread_id; }

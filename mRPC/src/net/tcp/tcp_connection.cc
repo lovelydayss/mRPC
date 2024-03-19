@@ -110,7 +110,7 @@ void TcpConnection::excute() {
 			    std::make_shared<TinyPBProtocol>();
 
 			RpcDispatcher::GetGlobalRpcDispatcher()->dispatch(
-			    message, respose_message, std::shared_ptr<TcpConnection>(this));
+			    message, respose_message, this);
 			respose_messages.emplace_back(respose_message);
 		}
 

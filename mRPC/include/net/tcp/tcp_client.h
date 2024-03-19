@@ -50,6 +50,9 @@ public:
 	void addTimerEvent(const TimerEvent::s_ptr& timer_event) {
 		m_event_loop->addTimerEvent(timer_event);
 	}
+	void deleteTimerEvent(const TimerEvent::s_ptr& timer_event) {
+		m_event_loop->deleteTimerEvent(timer_event);
+	}
 
 private:
 	void initLocalAddr();
