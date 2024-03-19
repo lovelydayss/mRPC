@@ -32,19 +32,21 @@ MRPC_NAMESPACE_BEGIN
 	m_listen_fds.insert(event->getFd());                                    \
 	DEBUGLOG("add event success, fd[%d]", event->getFd())
 
-#define DELETE_TO_EPOLL()                                                   \
-	auto it = m_listen_fds.find(event->getFd());                            \
-	if (it == m_listen_fds.end()) {                                         \
-		return;                                                             \
-	}                                                                       \
-	int op = EPOLL_CTL_DEL;                                                 \
-	epoll_event tmp = event->getEpollEvent();                               \
-	int ret = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);              \
-	if (ret == -1) {                                                        \
-		ERRORLOG("failed epoll_ctl when add fd, errno=%d, error=%s", errno, \
-		         strerror(errno));                                          \
-	}                                                                       \
-	DEBUGLOG("delete event success, fd[%d]", event->getFd());
+#define DELETE_TO_EPOLL()                                                      \
+	auto it = m_listen_fds.find(event->getFd());                               \
+	if (it == m_listen_fds.end()) {                                            \
+		return;                                                                \
+	}                                                                          \
+	int op = EPOLL_CTL_DEL;                                                    \
+	epoll_event tmp = event->getEpollEvent();                                  \
+	int ret = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);                 \
+	if (ret == -1) {                                                           \
+		ERRORLOG("failed epoll_ctl when delete fd, errno=%d, error=%s", errno, \
+		         strerror(errno));                                             \
+	}                                                                          \
+	DEBUGLOG("delete event success, fd[%d]", event->getFd());				   \
+	m_listen_fds.erase(event->getFd());
+
 
 static thread_local EventLoop::s_ptr t_current_EventLoop = nullptr;
 static thread_local std::once_flag t_singleton_EventLoop;
@@ -130,6 +132,18 @@ void EventLoop::loop() {
 					DEBUGLOG("fd %d trigger EPOLLOUT event", fd_event->getFd())
 					addTask(fd_event->handler(FdEvent::OUT_EVENT));
 				}
+				// EPOLLHUP EPOLLERR
+				if (trigger_event.events & EPOLLERR) {
+					DEBUGLOG("fd %d trigger EPOLLERROR event",
+					         fd_event->getFd())
+
+					// 删除出错的套接字
+					deleteEpollEvent(fd_event);
+					if (fd_event->handler(FdEvent::ERROR_EVENT) != nullptr) {
+						DEBUGLOG("fd %d add error callback", fd_event->getFd())
+						addTask(fd_event->handler(FdEvent::OUT_EVENT));
+					}
+				}
 			}
 		}
 	}
@@ -190,9 +204,9 @@ void EventLoop::initWakeUpFdEevent() {
 	m_wakeup_fd = eventfd(0, EFD_NONBLOCK);
 
 	if (m_wakeup_fd < 0) {
-		ERRORLOG(
-		    "failed to create event loop, eventfd create error, error info[%d]",
-		    errno);
+		ERRORLOG("failed to create event loop, eventfd create error, error "
+		         "info[%d]",
+		         errno);
 		exit(0);
 	}
 

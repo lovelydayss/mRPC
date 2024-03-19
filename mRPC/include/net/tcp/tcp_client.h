@@ -17,13 +17,14 @@ public:
 	using s_ptr = std::shared_ptr<TcpClient>;
 
 public:
-	explicit TcpClient(const NetAddr::s_ptr& peer_addr);
+	explicit TcpClient(const NetAddr::s_ptr& peer_addr,
+	                   const NetAddr::s_ptr& local_addr = nullptr);
 
 	~TcpClient();
 
-	// 异步的进行 conenct
-	// 如果connect 成功，done 会被执行
-	void connect(const std::function<void()>& done);
+
+	// 异步 connect, 连接成功执行回调函数
+	void asyncConnect(const std::function<void()>& done);
 
 	// 结束连接
 	void stop();
@@ -56,15 +57,15 @@ private:
 private:
 	NetAddr::s_ptr m_peer_addr;
 	NetAddr::s_ptr m_local_addr;
-	EventLoop::s_ptr m_event_loop;
 
 	int m_fd{-1};
 	FdEvent::s_ptr m_fd_event;
+	EventLoop::s_ptr m_event_loop;
 
 	TcpConnection::s_ptr m_connection;
 
 	uint32_t m_connect_error_code{0};
-	std::string m_connect_error_info;
+	std::string m_connect_error_info{};
 };
 
 MRPC_NAMESPACE_END

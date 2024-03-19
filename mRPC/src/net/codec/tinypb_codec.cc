@@ -66,6 +66,7 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 			}
 		}
 
+		// 避免未初始化字符干扰
 		if (i >= buffer->writeIndex()) {
 			DEBUGLOG("decode end, read all buffer data%s", "");
 			return;

@@ -25,7 +25,8 @@ public:
 	~FdEvent() = default;
 
 	// 监听读写事件，给套接字绑定回调函数
-	void listen(TriggerEvent event_type, const std::function<void()>& callback);
+	void listen(TriggerEvent event_type, const std::function<void()>& callback,
+	            const std::function<void()>& error_callback = nullptr);
 	// 取消监听
 	void cancel(TriggerEvent event_type);
 

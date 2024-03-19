@@ -73,14 +73,14 @@ void TcpBuffer::adjustBuffer() {
 }
 void TcpBuffer::moveReadIndex(int size) {
 
-	size_t j = m_write_index + size;
+	size_t j = m_read_index + size;
 	if (j >= m_buffer.size()) {
 		ERRORLOG("moveWriteIndex error, invalid size %d, old_read_index %d, "
 		         "buffer size %d",
 		         size, m_read_index, m_buffer.size());
 		return;
 	}
-	m_write_index = static_cast<int>(j);
+	m_read_index = static_cast<int>(j);
 	adjustBuffer();
 }
 void TcpBuffer::moveWriteIndex(int size) {

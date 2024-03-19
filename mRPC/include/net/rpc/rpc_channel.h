@@ -2,10 +2,10 @@
 #define MRPC_NET_RPC_RPC_CHANNEL_H
 
 #include "net_addr.h"
+#include "rpc_controller.h"
 #include "tcp_client.h"
 #include "timer_event.h"
 #include "utils.h"
-#include "rpc_controller.h"
 #include <google/protobuf/service.h>
 #include <memory>
 
@@ -14,11 +14,11 @@ MRPC_NAMESPACE_BEGIN
 #define NEWMESSAGE(type, var_name) \
 	std::shared_ptr<type> var_name = std::make_shared<type>();
 
-#define NEWRPCCONTROLLER(var_name)                    \
+#define NEWRPCCONTROLLER(var_name)                  \
 	std::shared_ptr<mrpc::RpcController> var_name = \
 	    std::make_shared<mrpc::RpcController>();
 
-#define NEWRPCCHANNEL(addr, var_name)              \
+#define NEWRPCCHANNEL(addr, var_name)            \
 	std::shared_ptr<mrpc::RpcChannel> var_name = \
 	    std::make_shared<mrpc::RpcChannel>(      \
 	        std::make_shared<mrpc::IPNetAddr>(addr));
@@ -49,8 +49,8 @@ public:
 
 	~RpcChannel() { INFOLOG("~RpcChannel"); }
 
-	void Init(const controller_s_ptr& controller, const message_s_ptr& req, const message_s_ptr& res,
-	          const closure_s_ptr& done);
+	void Init(const controller_s_ptr& controller, const message_s_ptr& req,
+	          const message_s_ptr& res, const closure_s_ptr& done);
 
 	void CallMethod(const google::protobuf::MethodDescriptor* method,
 	                google::protobuf::RpcController* controller,

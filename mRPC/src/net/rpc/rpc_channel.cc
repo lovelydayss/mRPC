@@ -29,6 +29,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
                             google::protobuf::Message* response,
                             google::protobuf::Closure* done) {
 
+	// 封装 RPC 请求
 	std::shared_ptr<TinyPBProtocol> req_protocol =
 	    std::make_shared<TinyPBProtocol>();
 
@@ -70,6 +71,8 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 
 	s_ptr channel = shared_from_this();
 
+	// 处理超时请求
+	/*
 	m_timer_event = std::make_shared<TimerEvent>(
 	    my_controller->GetTimeout(), false, [my_controller, channel]() mutable {
 		    my_controller->StartCancel();
@@ -85,8 +88,9 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 	    });
 
 	m_client->addTimerEvent(m_timer_event);
+	*/
 
-	m_client->connect([req_protocol, channel]() mutable {
+	m_client->asyncConnect([req_protocol, channel]() mutable {
 		RpcController* my_controller =
 		    dynamic_cast<RpcController*>(channel->getController());
 
@@ -143,7 +147,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 				                    .c_str());
 
 				        // 当成功读取到回包后， 取消定时任务
-				        channel->getTimerEvent()->setCancled(true);
+				        // channel->getTimerEvent()->setCancled(true);
 
 				        if (!(channel->getResponse()->ParseFromString(
 				                rsp_protocol->m_pb_data))) {

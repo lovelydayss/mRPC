@@ -81,11 +81,11 @@ private:
 	AbstractCodec::s_ptr m_codec; // 编解码器
 	std::vector<std::pair<AbstractProtocol::s_ptr,
 	                      std::function<void(AbstractProtocol::s_ptr)>>>
-	    m_write_dones;
+	    m_write_dones{};
 
 	// key 为 msg_id
 	std::map<std::string, std::function<void(AbstractProtocol::s_ptr)>>
-	    m_read_dones;
+	    m_read_dones{};
 };
 
 MRPC_NAMESPACE_END

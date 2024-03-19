@@ -1,3 +1,4 @@
+#include "abstract_protocol.h"
 #include "config.h"
 #include "log.h"
 #include "net_addr.h"
@@ -26,9 +27,8 @@ void test_connect() {
 
 	mrpc::IPNetAddr::s_ptr server_addr =
 	    std::make_shared<mrpc::IPNetAddr>("127.0.0.1", 12346);
-	int ret =
-	    connect(fd, server_addr->getSockAddr(), server_addr->getSockLen());
-	DEBUGLOG("connect success");
+	int ret = connect(fd, server_addr->getSockAddr(), server_addr->getSockLen());
+	DEBUGLOG("connect success : ret = %d", ret);
 
 	std::string msg = "hello mrpc!";
 
@@ -45,8 +45,17 @@ void test_tcp_client() {
 	mrpc::IPNetAddr::s_ptr addr =
 	    std::make_shared<mrpc::IPNetAddr>("127.0.0.1", 12346);
 	mrpc::TcpClient client(addr);
-	client.connect([addr]() {
-		DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
+	
+	client.asyncConnect([&addr, &client]() {
+
+		mrpc::AbstractProtocol::s_ptr test_s =
+		    std::make_shared<mrpc::AbstractProtocol>();
+		test_s->m_msg_id = "1213213213123";
+
+		client.writeMessage(
+		    test_s, [](const mrpc::AbstractProtocol::s_ptr&) mutable {
+			    DEBUGLOG("*******************************************%s", "");
+		    });
 	});
 }
 
@@ -55,9 +64,9 @@ int main() {
 	mrpc::configure_path = "/home/lovelydays/code/rpc/mRPC/conf/config.json";
 	mrpc::Config::GetGlobalConfig();
 
-	test_connect();
+	// test_connect();
 
-	// test_tcp_client();
+	test_tcp_client();
 
 	return 0;
 }

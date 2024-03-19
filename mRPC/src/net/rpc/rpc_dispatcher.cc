@@ -58,7 +58,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	}
 
 	service_s_ptr service = (*it).second;
-	auto method = std::unique_ptr<const google::protobuf::MethodDescriptor>(
+	auto method = std::shared_ptr<const google::protobuf::MethodDescriptor>(
 	    service->GetDescriptor()->FindMethodByName(method_name));
 	if (method == nullptr) {
 		ERRORLOG("%s | method neame[%s] not found in service[%s]",
@@ -69,7 +69,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 		return;
 	}
 
-	auto req_msg = std::unique_ptr<google::protobuf::Message>(
+	auto req_msg = std::shared_ptr<google::protobuf::Message>(
 	    service->GetRequestPrototype(method.get()).New());
 
 	// 反序列化，将 pb_data 反序列化为 req_msg
@@ -84,7 +84,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	INFOLOG("%s | get rpc request[%s]", req_protocol->m_msg_id.c_str(),
 	        req_msg->ShortDebugString().c_str());
 
-	auto rsp_msg = std::unique_ptr<google::protobuf::Message>(
+	auto rsp_msg = std::shared_ptr<google::protobuf::Message>(
 	    service->GetResponsePrototype(method.get()).New());
 
 	RpcController rpcController;

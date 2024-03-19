@@ -16,7 +16,7 @@ public:
 	using s_ptr = std::shared_ptr<TimerEvent>;
 
 public:
-	TimerEvent(int interval, bool is_repeated, const std::function<void()>& cb);
+	TimerEvent(int64_t interval, bool is_repeated, const std::function<void()>& cb);
 
 	int64_t getArriveTime() const { return m_arrive_time; }
 

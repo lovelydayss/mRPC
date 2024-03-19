@@ -1,28 +1,37 @@
 #include "tcp_client.h"
 #include "error_code.h"
+#include "eventloop.h"
+#include "fd_event.h"
 #include "fd_event_pool.h"
+#include "net_addr.h"
+#include "tcp_connection.h"
 #include "utils.h"
 #include <cerrno>
+#include <memory>
 
 MRPC_NAMESPACE_BEGIN
 
 #define SUCCESSFULLY_CONNECT_CALLBACK()                                \
-	DEBUGLOG("connect [%s] sussess", m_peer_addr->toString().c_str()); \
+	DEBUGLOG("connect [%s] success", m_peer_addr->toString().c_str()); \
 	initLocalAddr();                                                   \
 	m_connection->setState(Connected);                                 \
+	m_event_loop->deleteEpollEvent(m_fd_event);                        \
                                                                        \
 	if (done)                                                          \
 		done();
 
-#define FAILED_CONNECT_CALLBACK()                                           \
+#define FAILED_CONNECT_CALLBACK(connect_error_code)                         \
 	ERRORLOG("connect errror, errno=%d, error=%s", errno, strerror(errno)); \
-	m_connect_error_code = ERROR_FAILED_CONNECT;                            \
+	m_connect_error_code = connect_error_code;                              \
 	m_connect_error_info =                                                  \
-	    "connect error, sys error = " + std::string(strerror(errno));
+	    "connect error, sys error = " + std::string(strerror(errno));       \
+                                                                            \
+	m_event_loop->deleteEpollEvent(m_fd_event); // 取消连接事件监听
 
-TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr)
-    : m_peer_addr(peer_addr) {
-	m_event_loop = EventLoop::GetThreadLocalEventLoop();
+TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
+                     const NetAddr::s_ptr& local_addr /*= nullptr*/) /*NOLINT*/
+    : m_peer_addr(peer_addr)
+    , m_local_addr(local_addr) {
 
 	// 创建套接字
 	m_fd = socket(peer_addr->getFamily(), SOCK_STREAM, 0);
@@ -32,14 +41,18 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr)
 		return;
 	}
 
-	// 启动 EventLoop
+	// 获取本地 Fdevent ( 套接字(后续客户端事件使用此套接字注册到 epoll ))
 	m_fd_event = FdEventPool::GetGlobalFdEventPool()->getFdEvent(m_fd);
+
+	// 设置默认为非阻塞
 	m_fd_event->setNonBlock();
 
+	// 获取Eventloop
+	m_event_loop = EventLoop::GetThreadLocalEventLoop();
+
 	// 创建连接
-	m_connection =
-	    std::make_shared<TcpConnection>(m_event_loop, m_fd, peer_addr);
-	m_connection->setConnectionType(TcpConnectionByClient);
+	m_connection = std::make_shared<TcpConnection>(
+	    m_event_loop, m_fd, peer_addr, local_addr, TcpConnectionByClient);
 }
 
 TcpClient::~TcpClient() {
@@ -49,11 +62,9 @@ TcpClient::~TcpClient() {
 	}
 }
 
-// 异步的进行 conenct
-// 如果 connect 成功，执行回调函数 done
-void TcpClient::connect(const std::function<void()>& done) {
+void TcpClient::asyncConnect(const std::function<void()>& done) {
 	int ret =
-	    ::connect(m_fd, m_peer_addr->getSockAddr(), m_peer_addr->getSockLen());
+	    connect(m_fd, m_peer_addr->getSockAddr(), m_peer_addr->getSockLen());
 
 	if (ret == 0) {
 
@@ -63,28 +74,21 @@ void TcpClient::connect(const std::function<void()>& done) {
 
 		// 设置 epoll 监听可写事件，根据错误码进一步判断
 		m_fd_event->listen(FdEvent::OUT_EVENT, [this, done]() {
-			int ret = ::connect(m_fd, m_peer_addr->getSockAddr(),
-			                    m_peer_addr->getSockLen());
+			int ret = connect(m_fd, m_peer_addr->getSockAddr(),
+			                  m_peer_addr->getSockLen());
 
 			if ((ret < 0 && errno == EISCONN) || (ret == 0)) { // 成功连接
 
 				SUCCESSFULLY_CONNECT_CALLBACK();
 
-			} else if (errno == ECONNREFUSED) { // 访问拒绝，重启套接字
-				m_connect_error_code = ERROR_PEER_CLOSED;
-				m_connect_error_info = "connect refused, sys error = " +
-				                       std::string(strerror(errno));
+			} else if (errno == ECONNREFUSED) { // 访问拒绝
 
-				close(m_fd);
-				m_fd = socket(m_peer_addr->getFamily(), SOCK_STREAM, 0);
+				FAILED_CONNECT_CALLBACK(ERROR_PEER_CLOSED);
 
 			} else { // 连接失败，设置错误信息
 
-				FAILED_CONNECT_CALLBACK();
+				FAILED_CONNECT_CALLBACK(ERROR_FAILED_CONNECT);
 			}
-
-			// 连接完后需要去掉可写事件的监听，不然会一直触发
-			m_event_loop->deleteEpollEvent(m_fd_event);
 		});
 
 		// 添加到监听
@@ -96,7 +100,7 @@ void TcpClient::connect(const std::function<void()>& done) {
 
 	} else {
 
-		FAILED_CONNECT_CALLBACK();
+		FAILED_CONNECT_CALLBACK(ERROR_FAILED_CONNECT);
 	}
 }
 

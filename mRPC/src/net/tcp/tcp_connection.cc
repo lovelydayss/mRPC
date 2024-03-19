@@ -1,10 +1,13 @@
 #include "tcp_connection.h"
+#include "abstract_codec.h"
 #include "config.h"
 #include "eventloop.h"
+#include "fd_event.h"
 #include "fd_event_pool.h"
 #include "log.h"
 #include "net_addr.h"
 #include "rpc_dispatcher.h"
+#include "tinypb_codec.h"
 #include "tinypb_protocol.h"
 #include "utils.h"
 #include <memory>
@@ -31,6 +34,8 @@ TcpConnection::TcpConnection(const EventLoop::s_ptr& eventloop, int fd,
 	m_fd_event->listen(FdEvent::IN_EVENT,
 	                   std::bind(&TcpConnection::onRead, this));
 	m_eventloop->addEpollEvent(m_fd_event);
+
+	m_codec = std::make_shared<TinyPBCodec>();
 }
 
 void TcpConnection::onRead() {

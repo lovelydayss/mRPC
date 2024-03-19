@@ -5,7 +5,6 @@
 #include "rpc_channel.h"
 #include "rpc_closure.h"
 #include <arpa/inet.h>
-#include <cstdint>
 #include <fcntl.h>
 #include <google/protobuf/service.h>
 #include <netinet/in.h>

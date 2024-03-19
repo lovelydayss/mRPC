@@ -13,7 +13,7 @@ FdEvent::FdEvent(int fd)
 }
 
 void FdEvent::listen(TriggerEvent event_type,
-                     const std::function<void()>& callback) {
+                     const std::function<void()>& callback, const std::function<void()>& error_callback /*= nullptr*/) {
 
 	if (event_type == TriggerEvent::IN_EVENT) {
 		m_listen_events.events |= EPOLLIN;
@@ -21,6 +21,12 @@ void FdEvent::listen(TriggerEvent event_type,
 	} else {
 		m_listen_events.events |= EPOLLOUT;
 		m_write_callback = callback;
+	}
+
+	if (m_error_callback == nullptr) {
+		m_error_callback = error_callback;
+	} else {
+		m_error_callback = nullptr;
 	}
 
 	m_listen_events.data.ptr = this;
@@ -58,4 +64,5 @@ void FdEvent::setNonBlock() const {
 void FdEvent::setErrorCallback(const std::function<void()>& callback) {
 	m_error_callback = callback;
 }
+
 MRPC_NAMESPACE_END
