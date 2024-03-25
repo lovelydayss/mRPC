@@ -1,7 +1,7 @@
 --global define begin
 add_rules("mode.debug", "mode.release")
 
-set_languages("c++11")
+set_languages("c++14")
 add_ldflags("-lpthread")
 --global define end
 
@@ -27,11 +27,11 @@ target("test_ffmpeg")
 target("test_gtest")
     set_kind("binary")
    
-    add_links("jsoncpp")
-    add_includedirs("mRPC/include/jsoncpp/include")
-    add_linkdirs("mRPC/include/jsoncpp/lib")
+    add_links("gtest")
+    add_includedirs("mRPC/include/gtest/include")
+    add_linkdirs("mRPC/include/gtest/lib")
 
-    add_files("mRPC/test/test_jsoncpp.cc")
+    add_files("mRPC/test/test_gtest.cc")
 
 -- pakage test end
 
