@@ -150,7 +150,7 @@ bool RpcDispatcher::parseServiceFullName(const std::string& full_name,
                                          std::string& service_name,
                                          std::string& method_name) {
 	if (full_name.empty()) {
-		ERRORLOG("full name empty");
+		ERRORLOG("full name empty%s", "");
 		return false;
 	}
 

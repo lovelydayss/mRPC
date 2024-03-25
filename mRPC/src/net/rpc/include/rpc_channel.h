@@ -47,7 +47,7 @@ public:
 		m_client = std::make_shared<TcpClient>(m_peer_addr);
 	}
 
-	~RpcChannel() { INFOLOG("~RpcChannel"); }
+	~RpcChannel() { INFOLOG("~RpcChannel%s", ""); }
 
 	void Init(const controller_s_ptr& controller, const message_s_ptr& req,
 	          const message_s_ptr& res, const closure_s_ptr& done);

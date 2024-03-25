@@ -37,7 +37,7 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
 	m_fd = socket(peer_addr->getFamily(), SOCK_STREAM, 0);
 
 	if (m_fd < 0) {
-		ERRORLOG("TcpClient::TcpClient() error, failed to create fd");
+		ERRORLOG("TcpClient::TcpClient() error, failed to create fd%s", "");
 		return;
 	}
 
@@ -56,7 +56,7 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
 }
 
 TcpClient::~TcpClient() {
-	DEBUGLOG("~TcpClient()");
+	DEBUGLOG("~TcpClient()%s", "");
 	if (m_fd > 0) {
 		close(m_fd);
 	}

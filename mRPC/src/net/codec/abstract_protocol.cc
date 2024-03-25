@@ -21,7 +21,7 @@ std::string MsgIDUtil::GenMsgID() {
 
 		std::string res(g_msg_id_length, 0);
 		if ((read(g_random_fd, &res[0], g_msg_id_length)) != g_msg_id_length) {
-			ERRORLOG("read form /dev/urandom error");
+			ERRORLOG("read form /dev/urandom error%s", "");
 			return "";
 		}
 

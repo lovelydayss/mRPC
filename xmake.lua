@@ -1,14 +1,17 @@
+--global define begin
 add_rules("mode.debug", "mode.release")
 
 set_languages("c++11")
 add_ldflags("-lpthread")
+--global define end
 
+-- pakage test begin
 target("test_jsoncpp")
     set_kind("binary")
-   
+
     add_links("jsoncpp")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
     add_files("mRPC/test/test_jsoncpp.cc")
 
@@ -21,15 +24,30 @@ target("test_ffmpeg")
     add_linkdirs("/usr/local/lib")
 
     add_files("mRPC/test/test_ffmpeg.cc")
+target("test_gtest")
+    set_kind("binary")
+   
+    add_links("jsoncpp")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
+    add_files("mRPC/test/test_jsoncpp.cc")
+
+-- pakage test end
+
+-- rpc test begin
 target("test_log")
     set_kind("binary")
-    add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
 
-    add_includedirs("mRPC/include/common")
+    add_links("jsoncpp")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
+
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/test/test_log.cc")
@@ -39,12 +57,15 @@ target("test_eventloop")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
@@ -54,12 +75,15 @@ target("test_eventloop_timer")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
@@ -69,12 +93,15 @@ target("test_io_thread")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
@@ -84,13 +111,16 @@ target("test_net_addr")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
-    add_includedirs("mRPC/include/net/tcp")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
+    add_includedirs("mRPC/src/net/tcp/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/net_addr.cc")
@@ -100,15 +130,18 @@ target("test_tcp_server")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
-    add_includedirs("mRPC/include/net/tcp")
-    add_includedirs("mRPC/include/net/codec")
-    add_includedirs("mRPC/include/net/rpc")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
+    add_includedirs("mRPC/src/net/tcp/include")
+    add_includedirs("mRPC/src/net/codec/include")
+    add_includedirs("mRPC/src/net/rpc/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
@@ -121,15 +154,18 @@ target("test_tcp_client")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
-    add_includedirs("mRPC/include/net/tcp")
-    add_includedirs("mRPC/include/net/codec")
-    add_includedirs("mRPC/include/net/rpc")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
+    add_includedirs("mRPC/src/net/tcp/include")
+    add_includedirs("mRPC/src/net/codec/include")
+    add_includedirs("mRPC/src/net/rpc/include")
     
     add_files("mRPC/src/common/*.cc")
     add_files("mRPC/src/net/*.cc")
@@ -142,15 +178,18 @@ target("test_rpc_server")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
-    add_includedirs("mRPC/include/net/tcp")
-    add_includedirs("mRPC/include/net/codec")
-    add_includedirs("mRPC/include/net/rpc")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
+    add_includedirs("mRPC/src/net/tcp/include")
+    add_includedirs("mRPC/src/net/codec/include")
+    add_includedirs("mRPC/src/net/rpc/include")
     add_includedirs("mRPC/test")
     
     add_files("mRPC/src/common/*.cc")
@@ -166,15 +205,18 @@ target("test_rpc_client")
     set_kind("binary")
 
     add_links("jsoncpp")
-    add_links("protobuf")
-    add_includedirs("/usr/local/include")
-    add_linkdirs("/usr/local/lib")
+    add_includedirs("mRPC/include/jsoncpp/include")
+    add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_includedirs("mRPC/include/common")
-    add_includedirs("mRPC/include/net")
-    add_includedirs("mRPC/include/net/tcp")
-    add_includedirs("mRPC/include/net/codec")
-    add_includedirs("mRPC/include/net/rpc")
+    add_links("protobuf")
+    add_includedirs("mRPC/include/protobuf/include")
+    add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/src/common/include")
+    add_includedirs("mRPC/src/net/include")
+    add_includedirs("mRPC/src/net/tcp/include")
+    add_includedirs("mRPC/src/net/codec/include")
+    add_includedirs("mRPC/src/net/rpc/include")
     add_includedirs("mRPC/test")
     
     add_files("mRPC/src/common/*.cc")
@@ -184,6 +226,8 @@ target("test_rpc_client")
     add_files("mRPC/src/net/rpc/*.cc")
     add_files("mRPC/test/order.pb.cc")
     add_files("mRPC/test/test_rpc_client.cc")
+
+-- rpc test end
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

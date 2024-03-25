@@ -70,7 +70,7 @@ void Timer::deleteTimerEvent(const TimerEvent::s_ptr& event) {
 void Timer::onTimer() {
 
 	// 处理缓冲区数据，防止下一次继续触发可读事件
-	DEBUGLOG("ontimer");
+	DEBUGLOG("ontimer%s","");
 	char buf[8];
 	while (true) {
 		if ((read(m_fd, buf, 8) == -1) && errno == EAGAIN) {

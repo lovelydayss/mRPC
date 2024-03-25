@@ -117,7 +117,7 @@ void EventLoop::loop() {
 				    *(static_cast<FdEvent*>(trigger_event.data.ptr)));
 
 				if (fd_event == nullptr) {
-					ERRORLOG("fd_event = NULL, continue");
+					ERRORLOG("fd_event = NULL, continue%s", "");
 					continue;
 				}
 
@@ -150,12 +150,12 @@ void EventLoop::loop() {
 }
 void EventLoop::stop() {
 
-	INFOLOG("EVENT LOOP STOP!");
+	INFOLOG("EVENT LOOP STOP!%s", "");
 	m_stop_flag = true;
 }
 void EventLoop::wakeup() {
 
-	INFOLOG("WAKE UP!");
+	INFOLOG("WAKE UP!%s","");
 	m_wakeup_fd_event->wakeup();
 }
 

@@ -87,7 +87,7 @@ void TcpConnection::onRead() {
 	}
 
 	if (!is_read_all) {
-		ERRORLOG("not read all data");
+		ERRORLOG("not read all data%s", "");
 	}
 
 	excute();
@@ -178,7 +178,7 @@ void TcpConnection::onWrite() {
 		if (ret == -1 && errno == EAGAIN) {
 			// 发送缓冲区已满，不能再发送了。
 			// 这种情况我们等下次 fd 可写的时候再次发送数据即可
-			ERRORLOG("write data error, errno==EAGIN and ret == -1");
+			ERRORLOG("write data error, errno==EAGIN and ret == -1%s", "");
 			break;
 		}
 	}

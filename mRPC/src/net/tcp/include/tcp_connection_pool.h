@@ -6,7 +6,7 @@
 #include "utils.h"
 #include <memory>
 #include <unordered_map>
-#include <vector>
+#include <list>
 
 
 
@@ -25,8 +25,8 @@ public:
 
 
 private:
-    std::vector<TcpConnection::s_ptr> m_tcp_connections;
-    std::unordered_map<TcpConnection::s_ptr, int> m_connection_map;
+    std::list<TcpConnection::s_ptr> m_tcp_connections;
+    std::unordered_map<TcpConnection::s_ptr, std::list<TcpConnection::s_ptr>::iterator> m_connection_map;
 
 };
 

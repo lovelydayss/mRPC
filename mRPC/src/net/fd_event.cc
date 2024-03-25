@@ -47,7 +47,7 @@ const std::function<void()>& FdEvent::handler(TriggerEvent event_type) {
 	case TriggerEvent::ERROR_EVENT:
 		return m_error_callback;
 	default:
-		DEBUGLOG("wrong fd event type!");
+		DEBUGLOG("wrong fd event type!%s", "");
 	}
 }
 

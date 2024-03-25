@@ -34,7 +34,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 
 	RpcController* my_controller = dynamic_cast<RpcController*>(controller);
 	if (my_controller == nullptr) {
-		ERRORLOG("failed callmethod, RpcController convert error");
+		ERRORLOG("failed callmethod, RpcController convert error%s","");
 		return;
 	}
 

@@ -15,7 +15,7 @@ void test_io_thread() {
 
 	int listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd == -1) {
-		ERRORLOG("listenfd = -1");
+		ERRORLOG("listenfd = -1%s", "");
 		exit(0);
 	}
 

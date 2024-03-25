@@ -34,7 +34,7 @@ public:
 	              const NetAddr::s_ptr& peer_addr,
 	              const NetAddr::s_ptr& local_addr = nullptr,
 	              TcpConnectionType type = TcpConnectionByServer);
-	~TcpConnection() { DEBUGLOG("~TcpConnection"); }
+	~TcpConnection() { DEBUGLOG("~TcpConnection%s", ""); }
 
 	void onRead();  // 读入数据
 	void excute();  // 处理逻辑

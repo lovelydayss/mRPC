@@ -18,7 +18,7 @@ int main() {
 
 	int listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd == -1) {
-		ERRORLOG("listenfd = -1");
+		ERRORLOG("listenfd = -1%s","");
 		exit(0);
 	}
 
@@ -31,13 +31,13 @@ int main() {
 
 	int ret = bind(listenfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
 	if (ret != 0) {
-		ERRORLOG("bind error");
+		ERRORLOG("bind error%s","");
 		exit(1);
 	}
 
 	ret = listen(listenfd, 100);
 	if (ret != 0) {
-		ERRORLOG("listen error");
+		ERRORLOG("listen error%s","");
 		exit(1);
 	}
 
