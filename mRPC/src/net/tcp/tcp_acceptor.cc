@@ -1,5 +1,4 @@
 #include "tcp_acceptor.h"
-#include "log.h"
 #include "net_addr.h"
 #include "utils.h"
 #include <cstring>
@@ -14,7 +13,7 @@ MRPC_NAMESPACE_BEGIN
 TcpAcceptor::TcpAcceptor(const NetAddr::s_ptr& local_addr)
     : m_local_addr(local_addr) {
 	if (!local_addr->checkValid()) {
-		ERRORLOG("invalid local addr %s", local_addr->toString().c_str());
+		ERRORFMTLOG("invalid local addr {}", local_addr->toString().c_str());
 		exit(0);
 	}
 
@@ -22,7 +21,7 @@ TcpAcceptor::TcpAcceptor(const NetAddr::s_ptr& local_addr)
 	m_listenfd = socket(m_family, SOCK_STREAM, 0);
 
 	if (m_listenfd < 0) {
-		ERRORLOG("invalid listenfd %d", m_listenfd);
+		ERRORFMTLOG("invalid listenfd {}", m_listenfd);
 		exit(0);
 	}
 
@@ -30,18 +29,18 @@ TcpAcceptor::TcpAcceptor(const NetAddr::s_ptr& local_addr)
 	int val = 1;
 	if (setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) !=
 	    0) {
-		ERRORLOG("setsockopt REUSEADDR error, errno=%d, error=%s", errno,
+		ERRORFMTLOG("setsockopt REUSEADDR error, errno={}, error={}", errno,
 		         strerror(errno));
 	}
 
 	socklen_t len = m_local_addr->getSockLen();
 	if (bind(m_listenfd, m_local_addr->getSockAddr(), len) != 0) {
-		ERRORLOG("bind error, errno=%d, error=%s", errno, strerror(errno));
+		ERRORFMTLOG("bind error, errno={}, error={}", errno, strerror(errno));
 		exit(0);
 	}
 
 	if (listen(m_listenfd, 1000) != 0) {
-		ERRORLOG("listen error, errno=%d, error=%s", errno, strerror(errno));
+		ERRORFMTLOG("listen error, errno={}, error={}", errno, strerror(errno));
 		exit(0);
 	}
 }
@@ -57,12 +56,12 @@ std::pair<int, NetAddr::s_ptr> TcpAcceptor::accept() const {
 		    ::accept(m_listenfd, reinterpret_cast<sockaddr*>(&client_addr),
 		             &client_addr_len);
 		if (client_fd < 0) {
-			ERRORLOG("accept error, errno=%d, error=%s", errno,
+			ERRORFMTLOG("accept error, errno={}, error={}", errno,
 			         strerror(errno));
 		}
 
 		IPNetAddr::s_ptr peer_addr = std::make_shared<IPNetAddr>(client_addr);
-		INFOLOG("A client have accpeted succ, peer addr [%s]",
+		INFOFMTLOG("A client have accpeted succ, peer addr [{}]",
 		        peer_addr->toString().c_str());
 
 		return std::make_pair(client_fd, peer_addr);

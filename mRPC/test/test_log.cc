@@ -1,5 +1,5 @@
 #include "config.h"
-#include "log.h"
+#include "utils.h"
 #include <thread>
 #include <unistd.h>
 
@@ -10,17 +10,16 @@ int main() {
 
 	std::thread t1([]() {
 		for (int i = 0; i < 20; i++) {
-			DEBUGLOG("debug this is thread in %s", "fun1");
-			INFOLOG("info this is thread in %s", "fun1");
-
+			DEBUGFMTLOG("debug this is thread in {}", "fun1");
+			INFOFMTLOG("info this is thread in {}", "fun1");
 			sleep(1);
 		}
 	});
 
 	std::thread t2([]() {
 		for (int i = 0; i < 20; i++) {
-			DEBUGLOG("debug this is thread in %s", "fun2");
-			INFOLOG("info this is thread in %s", "fun2");
+			DEBUGFMTLOG("debug this is thread in {}", "fun2");
+			INFOFMTLOG("info this is thread in {}", "fun2");
 
 			sleep(1);
 		}

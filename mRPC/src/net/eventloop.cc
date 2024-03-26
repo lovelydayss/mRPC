@@ -1,6 +1,5 @@
 #include "eventloop.h"
 #include "fd_event.h"
-#include "log.h"
 #include "timer.h"
 #include "timer_event.h"
 #include "utils.h"
@@ -23,14 +22,14 @@ MRPC_NAMESPACE_BEGIN
 		op = EPOLL_CTL_MOD;                                                 \
 	}                                                                       \
 	epoll_event tmp = event->getEpollEvent();                               \
-	INFOLOG("epoll_event.events = %d", (int)tmp.events);                    \
+	INFOFMTLOG("epoll_event.events = {}", (int)tmp.events);                    \
 	int ret = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);              \
 	if (ret == -1) {                                                        \
-		ERRORLOG("failed epoll_ctl when add fd, errno=%d, error=%s", errno, \
+		ERRORFMTLOG("failed epoll_ctl when add fd, errno={}, error={}", errno, \
 		         strerror(errno));                                          \
 	}                                                                       \
 	m_listen_fds.insert(event->getFd());                                    \
-	DEBUGLOG("add event success, fd[%d]", event->getFd())
+	DEBUGFMTLOG("add event success, fd[{}]", event->getFd());
 
 #define DELETE_TO_EPOLL()                                                      \
 	auto it = m_listen_fds.find(event->getFd());                               \
@@ -41,10 +40,10 @@ MRPC_NAMESPACE_BEGIN
 	epoll_event tmp = event->getEpollEvent();                                  \
 	int ret = epoll_ctl(m_epoll_fd, op, event->getFd(), &tmp);                 \
 	if (ret == -1) {                                                           \
-		ERRORLOG("failed epoll_ctl when delete fd, errno=%d, error=%s", errno, \
+		ERRORFMTLOG("failed epoll_ctl when delete fd, errno={}, error={}", errno, \
 		         strerror(errno));                                             \
 	}                                                                          \
-	DEBUGLOG("delete event success, fd[%d]", event->getFd());                  \
+	DEBUGFMTLOG("delete event success, fd[{}]", event->getFd());                  \
 	m_listen_fds.erase(event->getFd());
 
 static thread_local EventLoop::s_ptr t_current_EventLoop = nullptr;
@@ -62,9 +61,10 @@ EventLoop::s_ptr EventLoop::GetThreadLocalEventLoop() {
 		int m_epoll_fd = epoll_create(10);
 
 		if (m_epoll_fd == -1) {
-			ERRORLOG("failed to create event loop, epoll_create error, error "
-			         "info[%d]",
-			         errno);
+			ERRORFMTLOG(
+			    "failed to create event loop, epoll_create error, error "
+			    "info[{}]",
+			    errno);
 			exit(0);
 		}
 
@@ -73,8 +73,8 @@ EventLoop::s_ptr EventLoop::GetThreadLocalEventLoop() {
 		t_current_EventLoop->initWakeUpFdEevent();
 		t_current_EventLoop->initTimer();
 
-		INFOLOG("success create event loop in thread %d",
-		        t_current_EventLoop->m_thread_id);
+		INFOFMTLOG("success create event loop in thread {}",
+		           t_current_EventLoop->m_thread_id);
 	});
 
 	return t_current_EventLoop;
@@ -104,10 +104,10 @@ void EventLoop::loop() {
 		epoll_event result_events[g_epoll_max_events];
 		int ret =
 		    epoll_wait(m_epoll_fd, result_events, g_epoll_max_events, timeout);
-		DEBUGLOG("now end epoll_wait, ret = %d", ret);
+		DEBUGFMTLOG("now end epoll_wait, ret = {}", ret);
 
 		if (ret < 0) {
-			ERRORLOG("epoll_wait error, errno=", errno);
+			ERRORFMTLOG("epoll_wait error, errno = {}", errno);
 		} else {
 			for (int i = 0; i < ret; i++) {
 				epoll_event trigger_event = result_events[i];
@@ -117,30 +117,32 @@ void EventLoop::loop() {
 				    *(static_cast<FdEvent*>(trigger_event.data.ptr)));
 
 				if (fd_event == nullptr) {
-					ERRORLOG("fd_event = NULL, continue%s", "");
+					ERRORFMTLOG("fd_event = NULL, continue");
 					continue;
 				}
 
 				if (trigger_event.events & EPOLLIN) {
 
-					DEBUGLOG("fd %d trigger EPOLLIN event", fd_event->getFd())
+					DEBUGFMTLOG("fd {} trigger EPOLLIN event",
+					            fd_event->getFd());
 					addTask(fd_event->handler(FdEvent::IN_EVENT));
 				}
 
 				if (trigger_event.events & EPOLLOUT) {
-					DEBUGLOG("fd %d trigger EPOLLOUT event", fd_event->getFd())
+					DEBUGFMTLOG("fd {} trigger EPOLLOUT event",
+					            fd_event->getFd());
 					addTask(fd_event->handler(FdEvent::OUT_EVENT));
 				}
 				// EPOLLHUP EPOLLERR
 				// if (trigger_event.events & EPOLLERR) {
 				else {
-					DEBUGLOG("fd %d trigger EPOLLERROR event",
-					         fd_event->getFd())
+					DEBUGFMTLOG("fd {} trigger EPOLLERROR event",
+					            fd_event->getFd());
 
 					// 删除出错的套接字
 					deleteEpollEvent(fd_event);
 					if (fd_event->handler(FdEvent::ERROR_EVENT) != nullptr) {
-						DEBUGLOG("fd %d add error callback", fd_event->getFd())
+						DEBUGFMTLOG("fd {} add error callback", fd_event->getFd());
 						addTask(fd_event->handler(FdEvent::OUT_EVENT));
 					}
 				}
@@ -150,12 +152,12 @@ void EventLoop::loop() {
 }
 void EventLoop::stop() {
 
-	INFOLOG("EVENT LOOP STOP!%s", "");
+	INFOFMTLOG("EVENT LOOP STOP!");
 	m_stop_flag = true;
 }
 void EventLoop::wakeup() {
 
-	INFOLOG("WAKE UP!%s","");
+	INFOFMTLOG("WAKE UP!");
 	m_wakeup_fd_event->wakeup();
 }
 
@@ -208,13 +210,13 @@ void EventLoop::initWakeUpFdEevent() {
 	m_wakeup_fd = eventfd(0, EFD_NONBLOCK);
 
 	if (m_wakeup_fd < 0) {
-		ERRORLOG("failed to create event loop, eventfd create error, error "
-		         "info[%d]",
+		ERRORFMTLOG("failed to create event loop, eventfd create error, error "
+		         "info[{}]",
 		         errno);
 		exit(0);
 	}
 
-	INFOLOG("wakeup fd = %d", m_wakeup_fd);
+	INFOFMTLOG("wakeup fd = {}", m_wakeup_fd);
 
 	m_wakeup_fd_event = std::make_shared<WakeUpFdEvent>(m_wakeup_fd);
 	m_wakeup_fd_event->listen(FdEvent::IN_EVENT, [&]() {
@@ -222,7 +224,7 @@ void EventLoop::initWakeUpFdEevent() {
 		while (read(m_wakeup_fd, buf, 8) != -1 && errno != EAGAIN) {
 		}
 
-		DEBUGLOG("read full bytes from wakeup fd[%d]", m_wakeup_fd);
+		DEBUGFMTLOG("read full bytes from wakeup fd[{}]", m_wakeup_fd);
 	});
 
 	addEpollEvent(m_wakeup_fd_event);

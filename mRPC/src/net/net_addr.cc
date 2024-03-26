@@ -1,5 +1,4 @@
 #include "net_addr.h"
-#include "log.h"
 #include "utils.h"
 #include <arpa/inet.h>
 #include <cstdint>
@@ -27,7 +26,7 @@ IPNetAddr::IPNetAddr(const std::string& ip, uint16_t port) /*NOLINT*/
 IPNetAddr::IPNetAddr(const std::string& addr) {
 	size_t i = addr.find_first_of(':');
 	if (i == std::string::npos) {
-		ERRORLOG("invalid ipv4 addr %s", addr.c_str());
+		ERRORFMTLOG("invalid ipv4 addr {}", addr.c_str());
 		return;
 	}
 	m_ip = addr.substr(0, i);

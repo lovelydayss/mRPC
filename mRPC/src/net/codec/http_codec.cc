@@ -1,6 +1,5 @@
 #include "http_codec.h"
 #include "http_protocol.h"
-#include "log.h"
 #include "utils.h"
 
 MRPC_NAMESPACE_BEGIN

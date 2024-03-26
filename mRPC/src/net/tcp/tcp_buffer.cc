@@ -1,5 +1,4 @@
 #include "tcp_buffer.h"
-#include "log.h"
 #include "utils.h"
 #include <cstring>
 
@@ -75,9 +74,9 @@ void TcpBuffer::moveReadIndex(int size) {
 
 	size_t j = m_read_index + size;
 	if (j >= m_buffer.size()) {
-		ERRORLOG("moveWriteIndex error, invalid size %d, old_read_index %d, "
-		         "buffer size %d",
-		         size, m_read_index, m_buffer.size());
+		ERRORFMTLOG("moveWriteIndex error, invalid size {}, old_read_index {}, \
+		            buffer size {}",
+		            size, m_read_index, m_buffer.size());
 		return;
 	}
 	m_read_index = static_cast<int>(j);
@@ -87,9 +86,9 @@ void TcpBuffer::moveWriteIndex(int size) {
 
 	size_t j = m_write_index + size;
 	if (j >= m_buffer.size()) {
-		ERRORLOG("moveWriteIndex error, invalid size %d, old_read_index %d, "
-		         "buffer size %d",
-		         size, m_read_index, m_buffer.size());
+		ERRORFMTLOG("moveWriteIndex error, invalid size {}, old_read_index {}, \
+		            buffer size {}",
+		            size, m_read_index, m_buffer.size());
 		return;
 	}
 	m_write_index = static_cast<int>(j);

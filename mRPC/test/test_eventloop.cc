@@ -1,7 +1,6 @@
 #include "config.h"
 #include "eventloop.h"
 #include "fd_event.h"
-#include "log.h"
 #include <arpa/inet.h>
 #include <memory>
 #include <netinet/in.h>
@@ -18,7 +17,7 @@ int main() {
 
 	int listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd == -1) {
-		ERRORLOG("listenfd = -1%s","");
+		ERRORFMTLOG("listenfd = -1");
 		exit(0);
 	}
 
@@ -31,13 +30,13 @@ int main() {
 
 	int ret = bind(listenfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
 	if (ret != 0) {
-		ERRORLOG("bind error%s","");
+		ERRORFMTLOG("bind error");
 		exit(1);
 	}
 
 	ret = listen(listenfd, 100);
 	if (ret != 0) {
-		ERRORLOG("listen error%s","");
+		ERRORFMTLOG("listen error");
 		exit(1);
 	}
 
@@ -49,7 +48,7 @@ int main() {
 
 		int clientfd = accept(listenfd, reinterpret_cast<sockaddr*>(&peer_addr),
 		                      &addr_len);
-		DEBUGLOG("success get client fd[%d], peer addr: [%s:%d]", clientfd,
+		DEBUGFMTLOG("success get client fd[{}], peer addr: [{}:{}]", clientfd,
 		         inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
 	});
 

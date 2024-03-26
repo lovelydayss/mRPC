@@ -1,5 +1,4 @@
 #include "config.h"
-#include "log.h"
 #include "net_addr.h"
 #include "order.pb.h"
 #include "rpc_dispatcher.h"
@@ -13,9 +12,9 @@ public:
 	               const ::makeOrderRequest* request,
 	               ::makeOrderResponse* response,
 	               ::google::protobuf::Closure* done) override{
-		// DEBUGLOG("start sleep 5s");
+		// DEBUGFMTLOG("start sleep 5s");
 		sleep(10);
-		// DEBUGLOG("end sleep 5s");
+		// DEBUGFMTLOG("end sleep 5s");
 		if (request->price() < 10) {
 			response->set_ret_code(-1);
 			response->set_res_info("short balance");
@@ -35,7 +34,7 @@ int main() {
 
 	mrpc::IPNetAddr::s_ptr addr =
 	    std::make_shared<mrpc::IPNetAddr>("127.0.0.1", 12346);
-	DEBUGLOG("create addr %s", addr->toString().c_str());
+	DEBUGFMTLOG("create addr {}", addr->toString().c_str());
 
 	mrpc::TcpServer tcp_server(addr);
 	tcp_server.start();

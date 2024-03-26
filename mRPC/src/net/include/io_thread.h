@@ -2,7 +2,6 @@
 #define MRPC_NET_IO_THREAD_H
 
 #include "eventloop.h"
-#include "log.h"
 #include "utils.h"
 #include <memory>
 #include <semaphore.h>

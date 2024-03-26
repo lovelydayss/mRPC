@@ -1,5 +1,4 @@
 #include "wakeup_fd_event.h"
-#include "log.h"
 #include "utils.h"
 #include <unistd.h>
 
@@ -11,9 +10,9 @@ void WakeUpFdEvent::wakeup() {
 	int ret = static_cast<int>(write(m_fd, buf, 8));
 
 	if (ret != 8)
-		ERRORLOG("write to wakeup fd less than 8 bytes, fd[%d]", m_fd);
+		ERRORFMTLOG("write to wakeup fd less than 8 bytes, fd[{}]", m_fd);
 
-	DEBUGLOG("success read 8 bytes%s","");
+	DEBUGFMTLOG("success read 8 bytes");
 }
 
 MRPC_NAMESPACE_END

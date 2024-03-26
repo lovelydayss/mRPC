@@ -34,7 +34,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 
 	RpcController* my_controller = dynamic_cast<RpcController*>(controller);
 	if (my_controller == nullptr) {
-		ERRORLOG("failed callmethod, RpcController convert error%s","");
+		ERRORFMTLOG("failed callmethod, RpcController convert error");
 		return;
 	}
 
@@ -46,14 +46,14 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 	}
 
 	req_protocol->m_method_name = method->full_name();
-	INFOLOG("%s | call method name [%s]", req_protocol->m_msg_id.c_str(),
+	INFOFMTLOG("{} | call method name [{}]", req_protocol->m_msg_id.c_str(),
 	        req_protocol->m_method_name.c_str());
 
 	if (!m_is_init) {
 
 		std::string err_info = "RpcChannel not init";
 		my_controller->SetError(ERROR_RPC_CHANNEL_INIT, err_info);
-		ERRORLOG("%s | %s, RpcChannel not init ",
+		ERRORFMTLOG("{} | {}, RpcChannel not init ",
 		         req_protocol->m_msg_id.c_str(), err_info.c_str());
 		return;
 	}
@@ -62,7 +62,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 	if (!request->SerializeToString(&(req_protocol->m_pb_data))) {
 		std::string err_info = "failde to serialize";
 		my_controller->SetError(ERROR_FAILED_SERIALIZE, err_info);
-		ERRORLOG("%s | %s, origin requeset [%s] ",
+		ERRORFMTLOG("{} | {}, origin requeset [{}] ",
 		         req_protocol->m_msg_id.c_str(), err_info.c_str(),
 		         request->ShortDebugString().c_str());
 		return;
@@ -95,16 +95,16 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 			my_controller->SetError(
 			    channel->getTcpClient()->getConnectErrorCode(),
 			    channel->getTcpClient()->getConnectErrorInfo());
-			ERRORLOG(
-			    "%s | connect error, error coode[%d], error info[%s], peer "
-			    "addr[%s]",
+			ERRORFMTLOG(
+			    "{} | connect error, error coode[{}], error info[{}], peer "
+			    "addr[{}]",
 			    req_protocol->m_msg_id.c_str(), my_controller->GetErrorCode(),
 			    my_controller->GetErrorInfo().c_str(),
 			    channel->getTcpClient()->getPeerAddr()->toString().c_str());
 			return;
 		}
 
-		INFOLOG("%s | connect success, peer addr[%s], local addr[%s]",
+		INFOFMTLOG("{} | connect success, peer addr[{}], local addr[{}]",
 		        req_protocol->m_msg_id.c_str(),
 		        channel->getTcpClient()->getPeerAddr()->toString().c_str(),
 		        channel->getTcpClient()->getLocalAddr()->toString().c_str());
@@ -113,9 +113,9 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 		    req_protocol, [req_protocol, channel, my_controller,
 		                   this](const AbstractProtocol::s_ptr&) mutable {
 
-			    INFOLOG(
-			        "%s | send rpc request success. call method name[%s], peer "
-			        "addr[%s], local addr[%s]",
+			    INFOFMTLOG(
+			        "{} | send rpc request success. call method name[{}], peer "
+			        "addr[{}], local addr[{}]",
 			        req_protocol->m_msg_id.c_str(),
 			        req_protocol->m_method_name.c_str(),
 			        channel->getTcpClient()->getPeerAddr()->toString().c_str(),
@@ -130,8 +130,8 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 			         this](const AbstractProtocol::s_ptr& msg) mutable {
 				        std::shared_ptr<mrpc::TinyPBProtocol> rsp_protocol =
 				            std::static_pointer_cast<mrpc::TinyPBProtocol>(msg);
-				        INFOLOG("%s | success get rpc response, call method "
-				                "name[%s], peer addr[%s], local addr[%s]",
+				        INFOFMTLOG("{} | success get rpc response, call method "
+				                "name[{}], peer addr[{}], local addr[{}]",
 				                rsp_protocol->m_msg_id.c_str(),
 				                rsp_protocol->m_method_name.c_str(),
 				                channel->getTcpClient()
@@ -148,7 +148,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 
 				        if (!(channel->getResponse()->ParseFromString(
 				                rsp_protocol->m_pb_data))) {
-					        ERRORLOG("%s | serialize error",
+					        ERRORFMTLOG("{} | serialize error",
 					                 rsp_protocol->m_msg_id.c_str());
 					        my_controller->SetError(ERROR_FAILED_SERIALIZE,
 					                                "serialize error");
@@ -156,8 +156,8 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 				        }
 
 				        if (rsp_protocol->m_err_code != 0) {
-					        ERRORLOG("%s | call rpc methood[%s] failed, error "
-					                 "code[%d], error info[%s]",
+					        ERRORFMTLOG("{} | call rpc methood[{}] failed, error "
+					                 "code[{}], error info[{}]",
 					                 rsp_protocol->m_msg_id.c_str(),
 					                 rsp_protocol->m_method_name.c_str(),
 					                 rsp_protocol->m_err_code,
@@ -168,8 +168,8 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 					        return;
 				        }
 
-				        INFOLOG("%s | call rpc success, call method name[%s], "
-				                "peer addr[%s], local addr[%s]",
+				        INFOFMTLOG("{} | call rpc success, call method name[{}], "
+				                "peer addr[{}], local addr[{}]",
 				                rsp_protocol->m_msg_id.c_str(),
 				                rsp_protocol->m_method_name.c_str(),
 				                channel->getTcpClient()
@@ -179,7 +179,7 @@ void RpcChannel::CallMethod(const google::protobuf::MethodDescriptor* method,
 				                channel->getTcpClient()
 				                    ->getLocalAddr()
 				                    ->toString()
-				                    .c_str())
+				                    .c_str());
 
 				        if (!my_controller->IsCanceled() &&
 				            channel->getClosure()) {

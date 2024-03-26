@@ -3,7 +3,6 @@
 #include "rpc_controller.h"
 #include "tcp_connection.h"
 #include "utils.h"
-#include "log.h"
 #include <cstddef>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
@@ -52,7 +51,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	// 查找目标服务
 	auto it = m_service_map.find(service_name);
 	if (it == m_service_map.end()) {
-		ERRORLOG("%s | sericve neame[%s] not found",
+		ERRORFMTLOG("{} | sericve neame[{}] not found",
 		         req_protocol->m_msg_id.c_str(), service_name.c_str());
 		setTinyPBError(rsp_protocol, ERROR_SERVICE_NOT_FOUND,
 		               "service not found");
@@ -64,7 +63,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	    service->GetDescriptor()->FindMethodByName(method_name);
 
 	if (method == nullptr) {
-		ERRORLOG("%s | method neame[%s] not found in service[%s]",
+		ERRORFMTLOG("{} | method neame[{}] not found in service[{}]",
 		         req_protocol->m_msg_id.c_str(), method_name.c_str(),
 		         service_name.c_str());
 		setTinyPBError(rsp_protocol, ERROR_SERVICE_NOT_FOUND,
@@ -77,7 +76,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 
 	// 反序列化，将 pb_data 反序列化为 req_msg
 	if (!req_msg->ParseFromString(req_protocol->m_pb_data)) {
-		ERRORLOG("%s | deserilize error", req_protocol->m_msg_id.c_str(),
+		ERRORFMTLOG("{} | deserilize error", req_protocol->m_msg_id.c_str(),
 		         method_name.c_str(), service_name.c_str());
 		setTinyPBError(rsp_protocol, ERROR_FAILED_DESERIALIZE,
 		               "deserilize error");
@@ -88,7 +87,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 		return;
 	}
 
-	INFOLOG("%s | get rpc request[%s]", req_protocol->m_msg_id.c_str(),
+	INFOFMTLOG("{} | get rpc request[{}]", req_protocol->m_msg_id.c_str(),
 	        req_msg->ShortDebugString().c_str());
 
 	google::protobuf::Message* rsp_msg =
@@ -102,7 +101,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	service->CallMethod(method, &rpcController, req_msg, rsp_msg, NULL);
 
 	if (!rsp_msg->SerializeToString(&(rsp_protocol->m_pb_data))) {
-		ERRORLOG("%s | serilize error, origin message [%s]",
+		ERRORFMTLOG("{} | serilize error, origin message [{}]",
 		         req_protocol->m_msg_id.c_str(),
 		         rsp_msg->ShortDebugString().c_str());
 		setTinyPBError(rsp_protocol, ERROR_SERVICE_NOT_FOUND, "serilize error");
@@ -119,7 +118,7 @@ void RpcDispatcher::dispatch(const AbstractProtocol::s_ptr& request,
 	}
 
 	rsp_protocol->m_err_code = 0;
-	INFOLOG("%s | dispatch success, requesut[%s], response[%s]",
+	INFOFMTLOG("{} | dispatch success, requesut[{}], response[{}]",
 	        req_protocol->m_msg_id.c_str(), req_msg->ShortDebugString().c_str(),
 	        rsp_msg->ShortDebugString().c_str());
 
@@ -150,21 +149,21 @@ bool RpcDispatcher::parseServiceFullName(const std::string& full_name,
                                          std::string& service_name,
                                          std::string& method_name) {
 	if (full_name.empty()) {
-		ERRORLOG("full name empty%s", "");
+		ERRORFMTLOG("full name empty");
 		return false;
 	}
 
 	// 使用 . 分割服务全名
 	size_t i = full_name.find_first_of('.');
 	if (i == std::string::npos) {
-		ERRORLOG("not find . in full name [%s]", full_name.c_str());
+		ERRORFMTLOG("not find . in full name [{}]", full_name.c_str());
 		return false;
 	}
 
 	service_name = full_name.substr(0, i);
 	method_name = full_name.substr(i + 1, full_name.length() - i - 1);
 
-	INFOLOG("parse sericve_name[%s] and method_name[%s] from full name [%s]",
+	INFOFMTLOG("parse sericve_name[{}] and method_name[{}] from full name [{}]",
 	        service_name.c_str(), method_name.c_str(), full_name.c_str());
 
 	return true;

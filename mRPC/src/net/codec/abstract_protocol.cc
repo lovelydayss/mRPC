@@ -1,5 +1,4 @@
 #include "abstract_protocol.h"
-#include "log.h"
 #include "utils.h"
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -21,7 +20,7 @@ std::string MsgIDUtil::GenMsgID() {
 
 		std::string res(g_msg_id_length, 0);
 		if ((read(g_random_fd, &res[0], g_msg_id_length)) != g_msg_id_length) {
-			ERRORLOG("read form /dev/urandom error%s", "");
+			ERRORFMTLOG("read form /dev/urandom error");
 			return "";
 		}
 

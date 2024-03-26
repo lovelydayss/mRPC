@@ -1,5 +1,4 @@
 #include "timer_event.h"
-#include "log.h"
 #include "utils.h"
 
 MRPC_NAMESPACE_BEGIN
@@ -16,7 +15,7 @@ TimerEvent::TimerEvent(int64_t interval, bool is_repeated,
 void TimerEvent::resetArriveTime() {
 
 	m_arrive_time = getNowNanoseconds() + m_interval;
-	DEBUGLOG("success create timer event, will excute at [%lld]",
+	DEBUGFMTLOG("success create timer event, will excute at [{}]",
 	         m_arrive_time);
 }
 

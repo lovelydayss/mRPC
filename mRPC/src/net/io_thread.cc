@@ -20,7 +20,7 @@ IOThread::IOThread() {
 
 	sem_wait(&m_init_semaphore); // 等待执行完 Main 函数前置操作
 
-	DEBUGLOG("IOThread [%d] create success", m_thread_id);
+	DEBUGFMTLOG("IOThread [{}] create success", m_thread_id);
 }
 
 IOThread::~IOThread() {
@@ -35,7 +35,7 @@ IOThread::~IOThread() {
 const EventLoop::s_ptr& IOThread::getEventLoop() { return m_EventLoop; }
 
 void IOThread::start() {
-	DEBUGLOG("Now invoke IOThread %d", m_thread_id);
+	DEBUGFMTLOG("Now invoke IOThread {}", m_thread_id);
 	sem_post(&m_start_semaphore);
 }
 
@@ -54,12 +54,12 @@ void* IOThread::Main(void* arg) {
 
 	// 让 IO 线程等待，直到 start() 中主动的调用
 
-	DEBUGLOG("IOThread %d created, wait start semaphore", thread->m_thread_id);
+	DEBUGFMTLOG("IOThread {} created, wait start semaphore", thread->m_thread_id);
 	sem_wait(&thread->m_start_semaphore);
 
-	DEBUGLOG("IOThread %d start loop ", thread->m_thread_id);
+	DEBUGFMTLOG("IOThread {} start loop ", thread->m_thread_id);
 	EventLoop::GetThreadLocalEventLoop()->loop(); // 启动循环
-	DEBUGLOG("IOThread %d end loop ", thread->m_thread_id);
+	DEBUGFMTLOG("IOThread {} end loop ", thread->m_thread_id);
 
 	return nullptr;
 }

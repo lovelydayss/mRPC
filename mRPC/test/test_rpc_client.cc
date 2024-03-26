@@ -1,6 +1,5 @@
 #include "config.h"
 #include "utils.h"
-#include "log.h"
 #include "order.pb.h"
 #include "rpc_channel.h"
 #include "rpc_closure.h"
@@ -32,7 +31,7 @@ int main() {
 	std::shared_ptr<mrpc::RpcClosure> closure = std::make_shared<
 	    mrpc::RpcClosure>([request, response, channel, controller]() mutable {
 		if (controller->GetErrorCode() == 0) {
-			INFOLOG("call rpc success, request[%s], response[%s]",
+			INFOFMTLOG("call rpc success, request[{}], response[{}]",
 			        request->ShortDebugString().c_str(),
 			        response->ShortDebugString().c_str());
 			// 执行业务逻辑
@@ -40,13 +39,13 @@ int main() {
 				// xx
 			}
 		} else {
-			ERRORLOG(
-			    "call rpc failed, request[%s], error code[%d], error info[%s]",
+			ERRORFMTLOG(
+			    "call rpc failed, request[{}], error code[{}], error info[{}]",
 			    request->ShortDebugString().c_str(), controller->GetErrorCode(),
 			    controller->GetErrorInfo().c_str());
 		}
 
-		INFOLOG("now exit eventloop");
+		INFOFMTLOG("now exit eventloop");
 		channel->getTcpClient()->stop();
 		channel.reset();
 	});
@@ -54,7 +53,7 @@ int main() {
 	CALLRPRC("127.0.0.1:12346", makeOrder, controller, request, response,
 	         closure);
 
-	INFOLOG("test_rpc_channel end");
+	INFOFMTLOG("test_rpc_channel end");
 
 	return 0;
 }

@@ -1,7 +1,7 @@
 --global define begin
 add_rules("mode.debug", "mode.release")
 
-set_languages("c++14")
+set_languages("c++17")
 add_ldflags("-lpthread")
 --global define end
 
@@ -43,10 +43,7 @@ target("test_log")
     add_includedirs("mRPC/include/jsoncpp/include")
     add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_links("protobuf")
-    add_includedirs("mRPC/include/protobuf/include")
-    add_linkdirs("mRPC/include/protobuf/lib")
-
+    add_includedirs("mRPC/include/fmtlog/include")
     add_includedirs("mRPC/src/common/include")
     
     add_files("mRPC/src/common/*.cc")
@@ -60,9 +57,7 @@ target("test_eventloop")
     add_includedirs("mRPC/include/jsoncpp/include")
     add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_links("protobuf")
-    add_includedirs("mRPC/include/protobuf/include")
-    add_linkdirs("mRPC/include/protobuf/lib")
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
@@ -78,9 +73,7 @@ target("test_eventloop_timer")
     add_includedirs("mRPC/include/jsoncpp/include")
     add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_links("protobuf")
-    add_includedirs("mRPC/include/protobuf/include")
-    add_linkdirs("mRPC/include/protobuf/lib")
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
@@ -96,9 +89,7 @@ target("test_io_thread")
     add_includedirs("mRPC/include/jsoncpp/include")
     add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_links("protobuf")
-    add_includedirs("mRPC/include/protobuf/include")
-    add_linkdirs("mRPC/include/protobuf/lib")
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
@@ -114,9 +105,7 @@ target("test_net_addr")
     add_includedirs("mRPC/include/jsoncpp/include")
     add_linkdirs("mRPC/include/jsoncpp/lib")
 
-    add_links("protobuf")
-    add_includedirs("mRPC/include/protobuf/include")
-    add_linkdirs("mRPC/include/protobuf/lib")
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
@@ -136,6 +125,8 @@ target("test_tcp_server")
     add_links("protobuf")
     add_includedirs("mRPC/include/protobuf/include")
     add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
@@ -161,6 +152,8 @@ target("test_tcp_client")
     add_includedirs("mRPC/include/protobuf/include")
     add_linkdirs("mRPC/include/protobuf/lib")
 
+    add_includedirs("mRPC/include/fmtlog/include")
+
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
     add_includedirs("mRPC/src/net/tcp/include")
@@ -184,6 +177,8 @@ target("test_rpc_server")
     add_links("protobuf")
     add_includedirs("mRPC/include/protobuf/include")
     add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")
@@ -211,6 +206,8 @@ target("test_rpc_client")
     add_links("protobuf")
     add_includedirs("mRPC/include/protobuf/include")
     add_linkdirs("mRPC/include/protobuf/lib")
+
+    add_includedirs("mRPC/include/fmtlog/include")
 
     add_includedirs("mRPC/src/common/include")
     add_includedirs("mRPC/src/net/include")

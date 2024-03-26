@@ -1,6 +1,5 @@
 #include "timer.h"
 #include "fd_event.h"
-#include "log.h"
 #include "sys/timerfd.h"
 #include "timer_event.h"
 #include "utils.h"
@@ -17,7 +16,7 @@ Timer::Timer()
 
 	m_fd = timerfd_create(CLOCK_MONOTONIC,
 	                      TFD_NONBLOCK | TFD_CLOEXEC); // 创建定时器 fd
-	DEBUGLOG("timer fd=%d", m_fd);
+	DEBUGFMTLOG("timer fd={}", m_fd);
 
 	listen(FdEvent::IN_EVENT, std::bind(&Timer::onTimer, this));
 }
@@ -61,7 +60,7 @@ void Timer::deleteTimerEvent(const TimerEvent::s_ptr& event) {
 			}
 		}
 
-		DEBUGLOG("success delete TimerEvent at arrive time %lld",
+		DEBUGFMTLOG("success delete TimerEvent at arrive time {}",
 		         event->getArriveTime());
 	}
 }
@@ -70,7 +69,7 @@ void Timer::deleteTimerEvent(const TimerEvent::s_ptr& event) {
 void Timer::onTimer() {
 
 	// 处理缓冲区数据，防止下一次继续触发可读事件
-	DEBUGLOG("ontimer%s","");
+	DEBUGFMTLOG("ontimer");
 	char buf[8];
 	while (true) {
 		if ((read(m_fd, buf, 8) == -1) && errno == EAGAIN) {
@@ -141,10 +140,10 @@ void Timer::resetArriveTime() {
 	// 将最近事件绑定到 epoll 监听
 	int ret = timerfd_settime(m_fd, 0, &value, nullptr);
 	if (ret != 0) {
-		ERRORLOG("timerfd_settime error, errno=%d, error=%s", errno,
+		ERRORFMTLOG("timerfd_settime error, errno={}, error={}", errno,
 		         strerror(errno));
 	}
-	DEBUGLOG("timer reset to %lld", now + interval);
+	DEBUGFMTLOG("timer reset to {}", now + interval);
 }
 
 MRPC_NAMESPACE_END

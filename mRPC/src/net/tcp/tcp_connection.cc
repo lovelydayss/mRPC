@@ -4,7 +4,6 @@
 #include "eventloop.h"
 #include "fd_event.h"
 #include "fd_event_pool.h"
-#include "log.h"
 #include "net_addr.h"
 #include "rpc_dispatcher.h"
 #include "tinypb_codec.h"
@@ -42,8 +41,8 @@ void TcpConnection::onRead() {
 	// 1. 从 socket 缓冲区，调用 系统的 read 函数读取字节 in_buffer 里面
 
 	if (m_state != Connected) {
-		ERRORLOG("onRead error, client has already disconneced, addr[%s], "
-		         "clientfd[%d]",
+		ERRORFMTLOG("onRead error, client has already disconneced, addr[{}], "
+		         "clientfd[{}]",
 		         m_peer_addr->toString().c_str(), m_fd);
 		return;
 	}
@@ -59,7 +58,7 @@ void TcpConnection::onRead() {
 
 		int ret = static_cast<int>(
 		    read(m_fd, &(m_in_buffer->m_buffer[write_index]), read_count));
-		DEBUGLOG("success read %d bytes from addr[%s], client fd[%d]", ret,
+		DEBUGFMTLOG("success read {} bytes from addr[{}], client fd[{}]", ret,
 		         m_peer_addr->toString().c_str(), m_fd);
 
 		if (ret > 0) {
@@ -80,14 +79,14 @@ void TcpConnection::onRead() {
 	}
 
 	if (is_close) {
-		INFOLOG("peer closed, peer addr [%s], clientfd [%d]",
+		INFOFMTLOG("peer closed, peer addr [{}], clientfd []",
 		        m_peer_addr->toString().c_str(), m_fd);
 		clear();
 		return;
 	}
 
 	if (!is_read_all) {
-		ERRORLOG("not read all data%s", "");
+		ERRORFMTLOG("not read all data");
 	}
 
 	excute();
@@ -103,7 +102,7 @@ void TcpConnection::excute() {
 		for (auto& message : require_messages) {
 			// 1. 针对每一个请求，调用 rpc 方法，获取响应 message
 			// 2. 将响应 message 放入到发送缓冲区，监听可写事件回包
-			INFOLOG("success get request[%s] from client[%s]",
+			INFOFMTLOG("success get request[{}] from client[{}]",
 			        message->m_msg_id.c_str(), m_peer_addr->toString().c_str());
 
 			std::shared_ptr<TinyPBProtocol> respose_message =
@@ -135,8 +134,8 @@ void TcpConnection::onWrite() {
 	// 将当前 out_buffer 里面的数据全部发送给 client
 
 	if (m_state != Connected) {
-		ERRORLOG("onWrite error, client has already disconneced, addr[%s], "
-		         "clientfd[%d]",
+		ERRORFMTLOG("onWrite error, client has already disconneced, addr[{}], "
+		         "clientfd[{}]",
 		         m_peer_addr->toString().c_str(), m_fd);
 		return;
 	}
@@ -158,7 +157,7 @@ void TcpConnection::onWrite() {
 	bool is_write_all = false;
 	while (true) {
 		if (m_out_buffer->readAble() == 0) {
-			DEBUGLOG("no data need to send to client [%s]",
+			DEBUGFMTLOG("no data need to send to client [{}]",
 			         m_peer_addr->toString().c_str());
 			is_write_all = true;
 			break;
@@ -170,7 +169,7 @@ void TcpConnection::onWrite() {
 		    write(m_fd, &(m_out_buffer->m_buffer[read_index]), write_size));
 
 		if (ret >= write_size) {
-			DEBUGLOG("no data need to send to client [%s]",
+			DEBUGFMTLOG("no data need to send to client [{}]",
 			         m_peer_addr->toString().c_str());
 			is_write_all = true;
 			break;
@@ -178,7 +177,7 @@ void TcpConnection::onWrite() {
 		if (ret == -1 && errno == EAGAIN) {
 			// 发送缓冲区已满，不能再发送了。
 			// 这种情况我们等下次 fd 可写的时候再次发送数据即可
-			ERRORLOG("write data error, errno==EAGIN and ret == -1%s", "");
+			ERRORFMTLOG("write data error, errno==EAGIN and ret == -1");
 			break;
 		}
 	}

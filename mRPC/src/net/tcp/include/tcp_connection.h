@@ -5,7 +5,6 @@
 #include "eventloop.h"
 #include "fd_event.h"
 #include "io_thread.h"
-#include "log.h"
 #include "net_addr.h"
 #include "tcp_buffer.h"
 #include "utils.h"
@@ -34,7 +33,7 @@ public:
 	              const NetAddr::s_ptr& peer_addr,
 	              const NetAddr::s_ptr& local_addr = nullptr,
 	              TcpConnectionType type = TcpConnectionByServer);
-	~TcpConnection() { DEBUGLOG("~TcpConnection%s", ""); }
+	~TcpConnection() { DEBUGFMTLOG("~TcpConnection"); }
 
 	void onRead();  // 读入数据
 	void excute();  // 处理逻辑

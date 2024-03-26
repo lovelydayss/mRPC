@@ -44,7 +44,7 @@ void TcpServer::onAccept() {
 	connection->setState(Connected);
 
 	m_connections.insert(connection);
-	INFOLOG("TcpServer succ get client connection, fd=%d", client_fd);
+	INFOFMTLOG("TcpServer succ get client connection, fd={}", client_fd);
 }
 
 MRPC_NAMESPACE_END

@@ -3,7 +3,6 @@
 #include "fd_event.h"
 #include "io_thread.h"
 #include "io_thread_pool.h"
-#include "log.h"
 #include "timer_event.h"
 #include <arpa/inet.h>
 #include <memory>
@@ -15,7 +14,7 @@ void test_io_thread() {
 
 	int listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenfd == -1) {
-		ERRORLOG("listenfd = -1%s", "");
+		ERRORFMTLOG("listenfd = -1");
 		exit(0);
 	}
 
@@ -28,13 +27,13 @@ void test_io_thread() {
 
 	int ret = bind(listenfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
 	if (ret != 0) {
-		ERRORLOG("bind error");
+		ERRORFMTLOG("bind error");
 		exit(1);
 	}
 
 	ret = listen(listenfd, 100);
 	if (ret != 0) {
-		ERRORLOG("listen error");
+		ERRORFMTLOG("listen error");
 		exit(1);
 	}
 
@@ -46,13 +45,13 @@ void test_io_thread() {
 
 		int clientfd = accept(listenfd, reinterpret_cast<sockaddr*>(&peer_addr),
 		                      &addr_len);
-		DEBUGLOG("success get client fd[%d], peer addr: [%s:%d]", clientfd,
+		DEBUGFMTLOG("success get client fd[{}], peer addr: [{}:{}]", clientfd,
 		         inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
 	});
 
 	int i = 0;
 	mrpc::TimerEvent::s_ptr timer_event = std::make_shared<mrpc::TimerEvent>(
-	    1000, true, [&i]() { INFOLOG("trigger timer event, count=%d", i++); });
+	    1000, true, [&i]() { INFOFMTLOG("trigger timer event, count={}", i++); });
 
 	// mrpc::IOThread io_thread;
 	// io_thread.getEventLoop()->addEpollEvent(event);

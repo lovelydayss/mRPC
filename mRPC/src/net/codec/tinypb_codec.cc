@@ -1,5 +1,4 @@
 #include "tinypb_codec.h"
-#include "log.h"
 #include "tinypb_protocol.h"
 #include "utils.h"
 #include <arpa/inet.h>
@@ -49,7 +48,7 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 				// 读下去四个字节。由于是网络字节序，需要转为主机字节序
 				if (i + 1 < buffer->writeIndex()) {
 					pk_len = getUInt32FromNetByte(&tmp[i + 1]);
-					DEBUGLOG("get pk_len = %d", pk_len);
+					DEBUGFMTLOG("get pk_len = {}", pk_len);
 
 					// 结束符的索引
 					uint32_t j = i + pk_len - 1;
@@ -68,7 +67,7 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 
 		// 避免未初始化字符干扰
 		if (i >= buffer->writeIndex()) {
-			DEBUGLOG("decode end, read all buffer data%s", "");
+			DEBUGFMTLOG("decode end, read all buffer data");
 			return;
 		}
 
@@ -85,26 +84,26 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 			    start_index + sizeof(char) + sizeof(message->m_pk_len);
 			if (msg_id_len_index >= end_index) {
 				message->parse_flag = false;
-				ERRORLOG("parse error, msg_id_len_index[%d] >= end_index[%d]",
+				ERRORFMTLOG("parse error, msg_id_len_index[{}] >= end_index[{}]",
 				         msg_id_len_index, end_index);
 				continue;
 			}
 			message->m_msg_id_len = getUInt32FromNetByte(&tmp[msg_id_len_index]);
-			DEBUGLOG("parse msg_id_len=%d", message->m_msg_id_len);
+			DEBUGFMTLOG("parse msg_id_len={}", message->m_msg_id_len);
 
 			uint32_t msg_id_index = msg_id_len_index + sizeof(message->m_msg_id_len);
 
 			char msg_id[100] = {0};
 			memcpy(&msg_id[0], &tmp[msg_id_index], message->m_msg_id_len);
 			message->m_msg_id = std::string(msg_id);
-			DEBUGLOG("parse msg_id=%s", message->m_msg_id.c_str());
+			DEBUGFMTLOG("parse msg_id={}", message->m_msg_id.c_str());
 
             // 解析方法名
 			uint32_t method_name_len_index = msg_id_index + message->m_msg_id_len;
 			if (method_name_len_index >= end_index) {
 				message->parse_flag = false;
-				ERRORLOG(
-				    "parse error, method_name_len_index[%d] >= end_index[%d]",
+				ERRORFMTLOG(
+				    "parse error, method_name_len_index[{}] >= end_index[{}]",
 				    method_name_len_index, end_index);
 				continue;
 			}
@@ -117,13 +116,13 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 			memcpy(&method_name[0], &tmp[method_name_index],
 			       message->m_method_name_len);
 			message->m_method_name = std::string(method_name);
-			DEBUGLOG("parse method_name=%s", message->m_method_name.c_str());
+			DEBUGFMTLOG("parse method_name={}", message->m_method_name.c_str());
 
             // 解析错误码
 			uint32_t err_code_index = method_name_index + message->m_method_name_len;
 			if (err_code_index >= end_index) {
 				message->parse_flag = false;
-				ERRORLOG("parse error, err_code_index[%d] >= end_index[%d]",
+				ERRORFMTLOG("parse error, err_code_index[{}] >= end_index[{}]",
 				         err_code_index, end_index);
 				continue;
 			}
@@ -133,8 +132,8 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 			    err_code_index + sizeof(message->m_err_code);
 			if (error_info_len_index >= end_index) {
 				message->parse_flag = false;
-				ERRORLOG(
-				    "parse error, error_info_len_index[%d] >= end_index[%d]",
+				ERRORFMTLOG(
+				    "parse error, error_info_len_index[{}] >= end_index[{}]",
 				    error_info_len_index, end_index);
 				continue;
 			}
@@ -147,7 +146,7 @@ void TinyPBCodec::decode(std::vector<AbstractProtocol::s_ptr>& out_messages,
 			memcpy(&error_info[0], &tmp[err_info_index],
 			       message->m_err_info_len);
 			message->m_err_info = std::string(error_info);
-			DEBUGLOG("parse error_info=%s", message->m_err_info.c_str());
+			DEBUGFMTLOG("parse error_info={}", message->m_err_info.c_str());
 
             // 解析 protobuf 数据
 			uint32_t pb_data_len = message->m_pk_len - message->m_method_name_len -
@@ -176,11 +175,11 @@ const char* TinyPBCodec::encodeTinyPB(const TinyPBProtocol::s_ptr& message,
 	}
     
     // 填充整包长度
-	DEBUGLOG("msg_id = %s", message->m_msg_id.c_str());
+	DEBUGFMTLOG("msg_id = {}", message->m_msg_id.c_str());
 	uint32_t pk_len = 2 + 24 + message->m_msg_id.length() +
 	             message->m_method_name.length() +
 	             message->m_err_info.length() + message->m_pb_data.length();
-	DEBUGLOG("pk_len = %", pk_len);
+	DEBUGFMTLOG("pk_len = {}", pk_len);
 
 	char* buf = reinterpret_cast<char*>(malloc(pk_len));
 	char* tmp = buf;
@@ -247,7 +246,7 @@ const char* TinyPBCodec::encodeTinyPB(const TinyPBProtocol::s_ptr& message,
 	message->parse_flag = true;
 	len = pk_len;
 
-	DEBUGLOG("encode message[%s] success", message->m_msg_id.c_str());
+	DEBUGFMTLOG("encode message[{}] success", message->m_msg_id.c_str());
 
 	return buf;
 }

@@ -11,21 +11,21 @@
 
 MRPC_NAMESPACE_BEGIN
 
-#define SUCCESSFULLY_CONNECT_CALLBACK()                                \
-	DEBUGLOG("connect [%s] success", m_peer_addr->toString().c_str()); \
-	initLocalAddr();                                                   \
-	m_connection->setState(Connected);                                 \
-	m_event_loop->deleteEpollEvent(m_fd_event);                        \
-                                                                       \
-	if (done)                                                          \
+#define SUCCESSFULLY_CONNECT_CALLBACK()                                   \
+	DEBUGFMTLOG("connect [{}] success", m_peer_addr->toString().c_str()); \
+	initLocalAddr();                                                      \
+	m_connection->setState(Connected);                                    \
+	m_event_loop->deleteEpollEvent(m_fd_event);                           \
+                                                                          \
+	if (done)                                                             \
 		done();
 
-#define FAILED_CONNECT_CALLBACK(connect_error_code)                         \
-	ERRORLOG("connect errror, errno=%d, error=%s", errno, strerror(errno)); \
-	m_connect_error_code = connect_error_code;                              \
-	m_connect_error_info =                                                  \
-	    "connect error, sys error = " + std::string(strerror(errno));       \
-                                                                            \
+#define FAILED_CONNECT_CALLBACK(connect_error_code)                            \
+	ERRORFMTLOG("connect errror, errno={}, error={}", errno, strerror(errno)); \
+	m_connect_error_code = connect_error_code;                                 \
+	m_connect_error_info =                                                     \
+	    "connect error, sys error = " + std::string(strerror(errno));          \
+                                                                               \
 	m_event_loop->deleteEpollEvent(m_fd_event); // 取消连接事件监听
 
 TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
@@ -37,7 +37,7 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
 	m_fd = socket(peer_addr->getFamily(), SOCK_STREAM, 0);
 
 	if (m_fd < 0) {
-		ERRORLOG("TcpClient::TcpClient() error, failed to create fd%s", "");
+		ERRORFMTLOG("TcpClient::TcpClient() error, failed to create fd");
 		return;
 	}
 
@@ -56,7 +56,7 @@ TcpClient::TcpClient(const NetAddr::s_ptr& peer_addr,
 }
 
 TcpClient::~TcpClient() {
-	DEBUGLOG("~TcpClient()%s", "");
+	DEBUGFMTLOG("~TcpClient()");
 	if (m_fd > 0) {
 		close(m_fd);
 	}
@@ -138,8 +138,9 @@ void TcpClient::initLocalAddr() {
 
 	int ret = getsockname(m_fd, reinterpret_cast<sockaddr*>(&local_addr), &len);
 	if (ret != 0) {
-		ERRORLOG("initLocalAddr error, getsockname error. errno=%d, error=%s",
-		         errno, strerror(errno));
+		ERRORFMTLOG(
+		    "initLocalAddr error, getsockname error. errno={}, error={}", errno,
+		    strerror(errno));
 		return;
 	}
 
