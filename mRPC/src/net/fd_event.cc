@@ -48,6 +48,9 @@ const std::function<void()>& FdEvent::handler(TriggerEvent event_type) {
 	default:
 		DEBUGFMTLOG("wrong fd event type!");
 	}
+
+	// never reach here
+	return m_error_callback;
 }
 
 void FdEvent::setNonBlock() const {

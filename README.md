@@ -17,6 +17,10 @@ https://blog.csdn.net/shuiyixin/article/details/89330529
 
 此外使用 protobuf 进行序列化及反序列化解析
 
+基于 zoomkeeper 的分布式服务注册中心，支持负载均衡
+
+https://github.com/tgockel/zookeeper-cpp
+
 基础网络库采用类似于 muduo 库实现
 
 #### C++ Linux VScode 工具链配置

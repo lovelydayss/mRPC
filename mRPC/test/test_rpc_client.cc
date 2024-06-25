@@ -13,7 +13,7 @@
 
 int main() {
 
-	mrpc::configure_path = "/home/lovelydays/code/rpc/mRPC/conf/config.json";
+	mrpc::configure_path = "/data/home/linearzhang/workspace/mproject/rpc/mRPC/conf/config.json";
 	mrpc::Config::GetGlobalConfig();
 
 	NEWRPCCHANNEL("127.0.0.1:12346", channel);
