@@ -38,10 +38,6 @@ int64_t getNowNanoseconds() {
 	return ms.count();
 }
 
-template <typename T, typename... Args>
-typename std::unique_ptr<T> make_unique(Args&&... args) {
-	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
 uint32_t getUInt32FromNetByte(const char* buf) {
 	uint32_t re;

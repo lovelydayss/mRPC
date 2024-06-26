@@ -26,7 +26,7 @@ public:
 
 int main() {
 
-	mrpc::configure_path = "/data/home/linearzhang/workspace/mproject/rpc/mRPC/conf/config.json";
+	mrpc::configure_path = "/home/lovelydayss/Code/project/rpc/mRPC/conf/config.json";
 	mrpc::Config::GetGlobalConfig();
 
 	std::shared_ptr<OrderImpl> service = std::make_shared<OrderImpl>();
