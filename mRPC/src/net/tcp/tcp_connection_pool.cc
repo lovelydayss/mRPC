@@ -10,7 +10,7 @@ static std::once_flag singleton_flag;
 const TcpConnectionPool::s_ptr& TcpConnectionPool::GetGlobalTcpConnectionPool() {
     
     std::call_once(singleton_flag, [](){
-
+        
     });
 
     return s_ptr_connection_pool;
